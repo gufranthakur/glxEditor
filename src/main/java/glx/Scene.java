@@ -41,7 +41,6 @@ public class Scene {
         }
     }
 
-    // Legacy methods for backward compatibility with glx.Functions
     public void setWidth(float width) {
         if (selectedMesh != null) selectedMesh.setWidth(width);
     }
@@ -64,6 +63,18 @@ public class Scene {
 
     public void setPositionZ(float z) {
         if (selectedMesh != null) selectedMesh.setPositionZ(z);
+    }
+
+    public void setRotationX(float rx) {
+        if (selectedMesh != null) selectedMesh.setRotationX(rx);
+    }
+
+    public void setRotationY(float ry) {
+        if (selectedMesh != null) selectedMesh.setRotationY(ry);
+    }
+
+    public void setRotationZ(float rz) {
+        if (selectedMesh != null) selectedMesh.setRotationZ(rz);
     }
 
     public float getWidth() {
@@ -90,6 +101,18 @@ public class Scene {
         return selectedMesh != null ? selectedMesh.getPositionZ() : 0.0f;
     }
 
+    public float getRotationX() {
+        return selectedMesh != null ? selectedMesh.getRotationX() : 0.0f;
+    }
+
+    public float getRotationY() {
+        return selectedMesh != null ? selectedMesh.getRotationY() : 0.0f;
+    }
+
+    public float getRotationZ() {
+        return selectedMesh != null ? selectedMesh.getRotationZ() : 0.0f;
+    }
+
     public void render(int windowWidth, int windowHeight) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -111,6 +134,10 @@ public class Scene {
             glPushMatrix();
             glTranslatef(mesh.getPositionX(), mesh.getPositionY(), mesh.getPositionZ());
 
+            glRotatef(mesh.getRotationX(), 1.0f, 0.0f, 0.0f);
+            glRotatef(mesh.getRotationY(), 0.0f, 1.0f, 0.0f);
+            glRotatef(mesh.getRotationZ(), 0.0f, 0.0f, 1.0f);
+
             if (mesh == selectedMesh) {
                 drawSelectionBox(mesh);
             }
@@ -129,19 +156,16 @@ public class Scene {
         glLineWidth(3);
         glBegin(GL_LINES);
 
-        // Bottom edges
         glVertex3f(-w, -h, -l); glVertex3f(w, -h, -l);
         glVertex3f(w, -h, -l); glVertex3f(w, -h, l);
         glVertex3f(w, -h, l); glVertex3f(-w, -h, l);
         glVertex3f(-w, -h, l); glVertex3f(-w, -h, -l);
 
-        // Top edges
         glVertex3f(-w, h, -l); glVertex3f(w, h, -l);
         glVertex3f(w, h, -l); glVertex3f(w, h, l);
         glVertex3f(w, h, l); glVertex3f(-w, h, l);
         glVertex3f(-w, h, l); glVertex3f(-w, h, -l);
 
-        // Vertical edges
         glVertex3f(-w, -h, -l); glVertex3f(-w, h, -l);
         glVertex3f(w, -h, -l); glVertex3f(w, h, -l);
         glVertex3f(w, -h, l); glVertex3f(w, h, l);

@@ -10,6 +10,9 @@ public abstract class Mesh {
     protected float positionX = 0.0f;
     protected float positionY = 0.0f;
     protected float positionZ = 0.0f;
+    protected float rotationX = 0.0f;
+    protected float rotationY = 0.0f;
+    protected float rotationZ = 0.0f;
     protected java.util.List<PlaneShape> shapes = new java.util.ArrayList<>();
 
     public Mesh(String name) {
@@ -25,7 +28,6 @@ public abstract class Mesh {
     public void removeShape(PlaneShape shape) { shapes.remove(shape); }
     public java.util.List<PlaneShape> getShapes() { return new java.util.ArrayList<>(shapes); }
 
-    // Getters and setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -46,6 +48,15 @@ public abstract class Mesh {
 
     public float getPositionZ() { return positionZ; }
     public void setPositionZ(float z) { this.positionZ = z; }
+
+    public float getRotationX() { return rotationX; }
+    public void setRotationX(float rx) { this.rotationX = rx; }
+
+    public float getRotationY() { return rotationY; }
+    public void setRotationY(float ry) { this.rotationY = ry; }
+
+    public float getRotationZ() { return rotationZ; }
+    public void setRotationZ(float rz) { this.rotationZ = rz; }
 
     @Override
     public String toString() {

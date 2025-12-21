@@ -43,6 +43,18 @@ public class Functions {
         scene.setPositionZ(z);
     }
 
+    public void updateRotationX(float rx) {
+        scene.setRotationX(rx);
+    }
+
+    public void updateRotationY(float ry) {
+        scene.setRotationY(ry);
+    }
+
+    public void updateRotationZ(float rz) {
+        scene.setRotationZ(rz);
+    }
+
     public void updateDimensions(float width, float length, float height) {
         updateWidth(width);
         updateLength(length);
@@ -53,6 +65,12 @@ public class Functions {
         scene.setPositionX(x);
         scene.setPositionY(y);
         scene.setPositionZ(z);
+    }
+
+    public void updateRotation(float rx, float ry, float rz) {
+        scene.setRotationX(rx);
+        scene.setRotationY(ry);
+        scene.setRotationZ(rz);
     }
 
     public void scaleUniform(float scaleFactor) {
@@ -76,9 +94,16 @@ public class Functions {
         scene.setPositionZ(0.0f);
     }
 
+    public void resetRotation() {
+        scene.setRotationX(0.0f);
+        scene.setRotationY(0.0f);
+        scene.setRotationZ(0.0f);
+    }
+
     public void resetAll() {
         resetDimensions();
         resetPosition();
+        resetRotation();
     }
 
     public float getWidth() {
@@ -105,6 +130,18 @@ public class Functions {
         return scene.getPositionZ();
     }
 
+    public float getRotationX() {
+        return scene.getRotationX();
+    }
+
+    public float getRotationY() {
+        return scene.getRotationY();
+    }
+
+    public float getRotationZ() {
+        return scene.getRotationZ();
+    }
+
     public float getVolume() {
         return scene.getWidth() * scene.getLength() * scene.getHeight();
     }
@@ -116,7 +153,6 @@ public class Functions {
         return 2 * (w * l + w * h + l * h);
     }
 
-    // Stage 2 functions
     public void addShapeToMesh(Mesh mesh, PlaneShape shape) {
         if (mesh != null) {
             mesh.addShape(shape);

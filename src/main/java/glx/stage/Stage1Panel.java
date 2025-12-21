@@ -21,6 +21,9 @@ public class Stage1Panel extends JPanel {
     private JSlider xSlider;
     private JSlider ySlider;
     private JSlider zSlider;
+    private JSlider rxSlider;
+    private JSlider rySlider;
+    private JSlider rzSlider;
 
     private JLabel widthValueLabel;
     private JLabel lengthValueLabel;
@@ -28,6 +31,9 @@ public class Stage1Panel extends JPanel {
     private JLabel xValueLabel;
     private JLabel yValueLabel;
     private JLabel zValueLabel;
+    private JLabel rxValueLabel;
+    private JLabel ryValueLabel;
+    private JLabel rzValueLabel;
     private JLabel volumeLabel;
     private JLabel surfaceAreaLabel;
     private JLabel meshTypeLabel;
@@ -44,10 +50,7 @@ public class Stage1Panel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Left panel - glx.mesh.Mesh list
         JPanel leftPanel = createMeshListPanel();
-
-        // Right panel - Controls
         JPanel rightPanel = createControlsPanel();
 
         add(leftPanel, BorderLayout.WEST);
@@ -106,7 +109,6 @@ public class Stage1Panel extends JPanel {
 
         int row = 0;
 
-        // glx.mesh.Mesh info
         gbc.gridx = 0;
         gbc.gridy = row++;
         gbc.gridwidth = 3;
@@ -115,7 +117,6 @@ public class Stage1Panel extends JPanel {
         panel.add(meshTypeLabel, gbc);
         gbc.gridwidth = 1;
 
-        // Dimensions Section
         gbc.gridx = 0;
         gbc.gridy = row++;
         gbc.gridwidth = 3;
@@ -124,7 +125,6 @@ public class Stage1Panel extends JPanel {
         panel.add(dimensionsTitle, gbc);
         gbc.gridwidth = 1;
 
-        // Create sliders
         widthValueLabel = createValueLabel();
         widthSlider = new JSlider(10, 300, 100);
         row = addSliderRow(panel, row, "Width:", widthSlider, widthValueLabel,
@@ -140,7 +140,6 @@ public class Stage1Panel extends JPanel {
         row = addSliderRow(panel, row, "Height:", heightSlider, heightValueLabel,
                 value -> functions.updateHeight(value));
 
-        // Position Section
         gbc.gridx = 0;
         gbc.gridy = row++;
         gbc.gridwidth = 3;
@@ -151,7 +150,6 @@ public class Stage1Panel extends JPanel {
         gbc.gridwidth = 1;
         gbc.insets = new Insets(10, 10, 10, 10);
 
-        // Position sliders
         xValueLabel = createValueLabel();
         xSlider = new JSlider(-300, 300, 0);
         row = addSliderRow(panel, row, "X:", xSlider, xValueLabel,
@@ -167,7 +165,31 @@ public class Stage1Panel extends JPanel {
         row = addSliderRow(panel, row, "Z:", zSlider, zValueLabel,
                 value -> functions.updatePositionZ(value));
 
-        // Reset button
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 3;
+        gbc.insets = new Insets(20, 10, 10, 10);
+        JLabel rotationTitle = new JLabel("Rotation");
+        rotationTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        panel.add(rotationTitle, gbc);
+        gbc.gridwidth = 1;
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        rxValueLabel = createValueLabel();
+        rxSlider = new JSlider(-180, 180, 0);
+        row = addSliderRow(panel, row, "RX:", rxSlider, rxValueLabel,
+                value -> functions.updateRotationX(value));
+
+        ryValueLabel = createValueLabel();
+        rySlider = new JSlider(-180, 180, 0);
+        row = addSliderRow(panel, row, "RY:", rySlider, ryValueLabel,
+                value -> functions.updateRotationY(value));
+
+        rzValueLabel = createValueLabel();
+        rzSlider = new JSlider(-180, 180, 0);
+        row = addSliderRow(panel, row, "RZ:", rzSlider, rzValueLabel,
+                value -> functions.updateRotationZ(value));
+
         gbc.gridx = 0;
         gbc.gridy = row++;
         gbc.gridwidth = 3;
@@ -176,11 +198,10 @@ public class Stage1Panel extends JPanel {
         resetButton.addActionListener(e -> resetSelected());
         panel.add(resetButton, gbc);
 
-        // Info panel
         gbc.gridy = row++;
         gbc.insets = new Insets(10, 10, 10, 10);
         JPanel infoPanel = new JPanel(new GridLayout(2, 1, 5, 5));
-        infoPanel.setBorder(BorderFactory.createTitledBorder("glx.mesh.Mesh Information"));
+        infoPanel.setBorder(BorderFactory.createTitledBorder("Mesh Information"));
 
         volumeLabel = new JLabel("Volume: -");
         volumeLabel.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -202,19 +223,19 @@ public class Stage1Panel extends JPanel {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridy = row;
 
-        // Label
         gbc.gridx = 0;
         gbc.weightx = 0.0;
         JLabel titleLabel = new JLabel(label);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
 
-        // Slider
         slider.setPreferredSize(new Dimension(300, 40));
 
-        // Value label
-        valueLabel.setText(String.format("%.2f", slider.getValue() / 100.0f));
+        float initialValue = slider.getValue() / 100.0f;
+        if (label.startsWith("R")) {
+            initialValue = slider.getValue();
+        }
+        valueLabel.setText(String.format("%.2f", initialValue));
 
-        // Add components in a sub-panel to maintain proper layout
         JPanel rowPanel = new JPanel(new GridBagLayout());
         GridBagConstraints rowGbc = new GridBagConstraints();
         rowGbc.fill = GridBagConstraints.HORIZONTAL;
@@ -240,7 +261,12 @@ public class Stage1Panel extends JPanel {
         panel.add(rowPanel, gbc);
 
         slider.addChangeListener(e -> {
-            float value = slider.getValue() / 100.0f;
+            float value;
+            if (label.startsWith("R")) {
+                value = slider.getValue();
+            } else {
+                value = slider.getValue() / 100.0f;
+            }
             callback.onValueChanged(value);
             valueLabel.setText(String.format("%.2f", value));
             updateInfo();
@@ -303,43 +329,45 @@ public class Stage1Panel extends JPanel {
 
         meshTypeLabel.setText(mesh.getName() + " (" + mesh.getType() + ")");
 
-        // Temporarily remove listeners to avoid triggering updates
-        for (var listener : widthSlider.getChangeListeners()) {
-            widthSlider.removeChangeListener(listener);
-        }
-        for (var listener : lengthSlider.getChangeListeners()) {
-            lengthSlider.removeChangeListener(listener);
-        }
-        for (var listener : heightSlider.getChangeListeners()) {
-            heightSlider.removeChangeListener(listener);
-        }
-        for (var listener : xSlider.getChangeListeners()) {
-            xSlider.removeChangeListener(listener);
-        }
-        for (var listener : ySlider.getChangeListeners()) {
-            ySlider.removeChangeListener(listener);
-        }
-        for (var listener : zSlider.getChangeListeners()) {
-            zSlider.removeChangeListener(listener);
-        }
+        removeAllListeners();
 
-        // Update slider values
         widthSlider.setValue((int)(mesh.getWidth() * 100));
         lengthSlider.setValue((int)(mesh.getLength() * 100));
         heightSlider.setValue((int)(mesh.getHeight() * 100));
         xSlider.setValue((int)(mesh.getPositionX() * 100));
         ySlider.setValue((int)(mesh.getPositionY() * 100));
         zSlider.setValue((int)(mesh.getPositionZ() * 100));
+        rxSlider.setValue((int)mesh.getRotationX());
+        rySlider.setValue((int)mesh.getRotationY());
+        rzSlider.setValue((int)mesh.getRotationZ());
 
-        // Update labels
         widthValueLabel.setText(String.format("%.2f", mesh.getWidth()));
         lengthValueLabel.setText(String.format("%.2f", mesh.getLength()));
         heightValueLabel.setText(String.format("%.2f", mesh.getHeight()));
         xValueLabel.setText(String.format("%.2f", mesh.getPositionX()));
         yValueLabel.setText(String.format("%.2f", mesh.getPositionY()));
         zValueLabel.setText(String.format("%.2f", mesh.getPositionZ()));
+        rxValueLabel.setText(String.format("%.2f", mesh.getRotationX()));
+        ryValueLabel.setText(String.format("%.2f", mesh.getRotationY()));
+        rzValueLabel.setText(String.format("%.2f", mesh.getRotationZ()));
 
-        // Re-add listeners
+        addAllListeners();
+        updateInfo();
+    }
+
+    private void removeAllListeners() {
+        for (var listener : widthSlider.getChangeListeners()) widthSlider.removeChangeListener(listener);
+        for (var listener : lengthSlider.getChangeListeners()) lengthSlider.removeChangeListener(listener);
+        for (var listener : heightSlider.getChangeListeners()) heightSlider.removeChangeListener(listener);
+        for (var listener : xSlider.getChangeListeners()) xSlider.removeChangeListener(listener);
+        for (var listener : ySlider.getChangeListeners()) ySlider.removeChangeListener(listener);
+        for (var listener : zSlider.getChangeListeners()) zSlider.removeChangeListener(listener);
+        for (var listener : rxSlider.getChangeListeners()) rxSlider.removeChangeListener(listener);
+        for (var listener : rySlider.getChangeListeners()) rySlider.removeChangeListener(listener);
+        for (var listener : rzSlider.getChangeListeners()) rzSlider.removeChangeListener(listener);
+    }
+
+    private void addAllListeners() {
         widthSlider.addChangeListener(e -> {
             float value = widthSlider.getValue() / 100.0f;
             functions.updateWidth(value);
@@ -373,8 +401,21 @@ public class Stage1Panel extends JPanel {
             functions.updatePositionZ(value);
             zValueLabel.setText(String.format("%.2f", value));
         });
-
-        updateInfo();
+        rxSlider.addChangeListener(e -> {
+            float value = rxSlider.getValue();
+            functions.updateRotationX(value);
+            rxValueLabel.setText(String.format("%.2f", value));
+        });
+        rySlider.addChangeListener(e -> {
+            float value = rySlider.getValue();
+            functions.updateRotationY(value);
+            ryValueLabel.setText(String.format("%.2f", value));
+        });
+        rzSlider.addChangeListener(e -> {
+            float value = rzSlider.getValue();
+            functions.updateRotationZ(value);
+            rzValueLabel.setText(String.format("%.2f", value));
+        });
     }
 
     private void updateInfo() {
