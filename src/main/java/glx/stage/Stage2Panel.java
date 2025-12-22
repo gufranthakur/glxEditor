@@ -54,6 +54,15 @@ public class Stage2Panel extends JPanel {
                 new Font("Arial", Font.BOLD, 14)
         ));
 
+        // Button at top
+        JButton refreshBtn = new JButton("Refresh");
+        refreshBtn.setToolTipText("Refresh the mesh list from the scene");
+        refreshBtn.addActionListener(e -> {
+            refreshMeshList();
+            updateShapeList();
+        });
+        panel.add(refreshBtn, BorderLayout.NORTH);
+
         meshListModel = new DefaultListModel<>();
         refreshMeshList();
 
@@ -69,14 +78,6 @@ public class Stage2Panel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(meshList);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         panel.add(scrollPane, BorderLayout.CENTER);
-
-        JButton refreshBtn = new JButton("Refresh");
-        refreshBtn.setToolTipText("Refresh the mesh list from the scene");
-        refreshBtn.addActionListener(e -> {
-            refreshMeshList();
-            updateShapeList();
-        });
-        panel.add(refreshBtn, BorderLayout.SOUTH);
 
         return panel;
     }
@@ -102,22 +103,9 @@ public class Stage2Panel extends JPanel {
                 new Font("Arial", Font.BOLD, 14)
         ));
 
-        shapeListModel = new DefaultListModel<>();
-        shapeList = new JList<>(shapeListModel);
-        shapeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        shapeList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                updateControlsForShape();
-            }
-        });
-
-        JScrollPane scrollPane = new JScrollPane(shapeList);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        // Shape actions panel
+        // Shape actions panel at top
         JPanel actionsPanel = new JPanel(new GridLayout(4, 1, 5, 5));
-        actionsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+        actionsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
         JButton addSquareBtn = new JButton("+ Add Square");
         JButton addCircleBtn = new JButton("+ Add Circle");
@@ -139,7 +127,20 @@ public class Stage2Panel extends JPanel {
         actionsPanel.add(removeBtn);
         actionsPanel.add(intrudeBtn);
 
-        panel.add(actionsPanel, BorderLayout.SOUTH);
+        panel.add(actionsPanel, BorderLayout.NORTH);
+
+        shapeListModel = new DefaultListModel<>();
+        shapeList = new JList<>(shapeListModel);
+        shapeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        shapeList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateControlsForShape();
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(shapeList);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
     }
@@ -303,9 +304,6 @@ public class Stage2Panel extends JPanel {
         titleLabel.setPreferredSize(new Dimension(60, 25));
         rowPanel.add(titleLabel, BorderLayout.WEST);
 
-        slider.setMajorTickSpacing(isRotation ? 45 : 25);
-        slider.setPaintTicks(true);
-        slider.setSnapToTicks(false);
         rowPanel.add(slider, BorderLayout.CENTER);
 
         valueLabel.setFont(new Font("Monospaced", Font.PLAIN, 12));

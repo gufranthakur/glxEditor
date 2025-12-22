@@ -43,7 +43,20 @@ public class Stage4Panel extends JPanel {
 
         JLabel title = new JLabel("Meshes");
         title.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(title, BorderLayout.NORTH);
+
+        // Button at top (after title)
+        JButton refreshBtn = new JButton("Refresh");
+        refreshBtn.addActionListener(e -> {
+            refreshMeshList();
+            updateShapeList();
+        });
+
+        // Create a container for title and button
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.add(title, BorderLayout.NORTH);
+        topPanel.add(refreshBtn, BorderLayout.CENTER);
+
+        panel.add(topPanel, BorderLayout.NORTH);
 
         meshListModel = new DefaultListModel<>();
         refreshMeshList();
@@ -57,13 +70,6 @@ public class Stage4Panel extends JPanel {
         });
 
         panel.add(new JScrollPane(meshList), BorderLayout.CENTER);
-
-        JButton refreshBtn = new JButton("Refresh");
-        refreshBtn.addActionListener(e -> {
-            refreshMeshList();
-            updateShapeList();
-        });
-        panel.add(refreshBtn, BorderLayout.SOUTH);
 
         return panel;
     }
@@ -81,19 +87,8 @@ public class Stage4Panel extends JPanel {
 
         JLabel title = new JLabel("Plane Shapes");
         title.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(title, BorderLayout.NORTH);
 
-        shapeListModel = new DefaultListModel<>();
-        shapeList = new JList<>(shapeListModel);
-        shapeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        shapeList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                updateControlsForShape();
-            }
-        });
-
-        panel.add(new JScrollPane(shapeList), BorderLayout.CENTER);
-
+        // Button panel at top
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 5, 5));
         JButton addSquareBtn = new JButton("Add Square");
         JButton addCircleBtn = new JButton("Add Circle");
@@ -107,7 +102,23 @@ public class Stage4Panel extends JPanel {
         buttonPanel.add(addCircleBtn);
         buttonPanel.add(removeBtn);
 
-        panel.add(buttonPanel, BorderLayout.SOUTH);
+        // Create a container for title and buttons
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.add(title, BorderLayout.NORTH);
+        topPanel.add(buttonPanel, BorderLayout.CENTER);
+
+        panel.add(topPanel, BorderLayout.NORTH);
+
+        shapeListModel = new DefaultListModel<>();
+        shapeList = new JList<>(shapeListModel);
+        shapeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        shapeList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateControlsForShape();
+            }
+        });
+
+        panel.add(new JScrollPane(shapeList), BorderLayout.CENTER);
 
         return panel;
     }

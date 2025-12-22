@@ -65,22 +65,7 @@ public class Stage1Panel extends JPanel {
         title.setFont(new Font("Arial", Font.BOLD, 16));
         panel.add(title, BorderLayout.NORTH);
 
-        meshListModel = new DefaultListModel<>();
-        meshList = new JList<>(meshListModel);
-        meshList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        meshList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                Mesh selected = meshList.getSelectedValue();
-                if (selected != null) {
-                    scene.setSelectedMesh(selected);
-                    updateControlsForSelectedMesh(selected);
-                }
-            }
-        });
-
-        JScrollPane scrollPane = new JScrollPane(meshList);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
+        // Button panel at top (after title)
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 5, 5));
 
         JButton addCubeButton = new JButton("Add Cube");
@@ -96,7 +81,28 @@ public class Stage1Panel extends JPanel {
         buttonPanel.add(addCylinderButton);
         buttonPanel.add(removeButton);
 
-        panel.add(buttonPanel, BorderLayout.SOUTH);
+        // Create a container for title and buttons
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.add(title, BorderLayout.NORTH);
+        topPanel.add(buttonPanel, BorderLayout.CENTER);
+
+        panel.add(topPanel, BorderLayout.NORTH);
+
+        meshListModel = new DefaultListModel<>();
+        meshList = new JList<>(meshListModel);
+        meshList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        meshList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                Mesh selected = meshList.getSelectedValue();
+                if (selected != null) {
+                    scene.setSelectedMesh(selected);
+                    updateControlsForSelectedMesh(selected);
+                }
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(meshList);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
     }
