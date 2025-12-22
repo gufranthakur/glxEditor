@@ -52,7 +52,7 @@ public class GLX {
         tabbedPane.addTab("Stage 2", new Stage2Panel(scene));
         tabbedPane.addTab("Stage 3", new Stage3Panel(scene));
         tabbedPane.addTab("Stage 4", new Stage4Panel(scene));
-
+        tabbedPane.addTab("Output", new OutputPanel(scene));
 
         controlFrame.add(tabbedPane);
         controlFrame.pack();

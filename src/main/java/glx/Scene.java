@@ -13,22 +13,22 @@ public class Scene {
     public float cameraRotationX = 30.0f;
     public float cameraDistance = 6.0f;
 
-    public void addMesh(Mesh mesh) {
+    public synchronized void addMesh(Mesh mesh) {
         meshes.add(mesh);
         if (selectedMesh == null) {
             selectedMesh = mesh;
         }
     }
 
-    public void removeMesh(Mesh mesh) {
+    public synchronized void removeMesh(Mesh mesh) {
         meshes.remove(mesh);
         if (selectedMesh == mesh) {
             selectedMesh = meshes.isEmpty() ? null : meshes.get(0);
         }
     }
 
-    public List<Mesh> getMeshes() {
-        return new ArrayList<>(meshes);
+    public synchronized List<Mesh> getMeshes() {
+        return new ArrayList<>(meshes); // Return a copy to avoid concurrent modification
     }
 
     public Mesh getSelectedMesh() {
@@ -130,7 +130,13 @@ public class Scene {
         glRotatef(cameraRotationX, 1.0f, 0.0f, 0.0f);
         glRotatef(cameraRotationY, 0.0f, 1.0f, 0.0f);
 
-        for (Mesh mesh : meshes) {
+        // Create a copy of meshes to avoid concurrent modification during rendering
+        List<Mesh> meshesToRender;
+        synchronized (this) {
+            meshesToRender = new ArrayList<>(meshes);
+        }
+
+        for (Mesh mesh : meshesToRender) {
             glPushMatrix();
             glTranslatef(mesh.getPositionX(), mesh.getPositionY(), mesh.getPositionZ());
 

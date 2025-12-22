@@ -7,6 +7,7 @@ import glx.shape.SquareShape;
 import glx.shape.CircleShape;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class Stage2Panel extends JPanel {
@@ -20,6 +21,7 @@ public class Stage2Panel extends JPanel {
     private JSlider xSlider, ySlider, widthSlider, heightSlider, radiusSlider, rotationSlider, depthSlider;
     private JLabel xLabel, yLabel, widthLabel, heightLabel, radiusLabel, rotationLabel, depthLabel, shapeInfoLabel;
     private JPanel dimensionPanel;
+    private JButton intrudeBtn;
 
     private int shapeCounter = 1;
 
@@ -32,18 +34,25 @@ public class Stage2Panel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        add(createMeshListPanel(), BorderLayout.WEST);
-        add(createShapePanel(), BorderLayout.CENTER);
-        add(createControlsPanel(), BorderLayout.EAST);
+        // Left panel: Meshes and Shapes side by side
+        JPanel leftPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        leftPanel.add(createMeshListPanel());
+        leftPanel.add(createShapePanel());
+
+        add(leftPanel, BorderLayout.WEST);
+        add(createControlsPanel(), BorderLayout.CENTER);
     }
 
     private JPanel createMeshListPanel() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.setPreferredSize(new Dimension(150, 600));
-
-        JLabel title = new JLabel("Meshes");
-        title.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(title, BorderLayout.NORTH);
+        panel.setPreferredSize(new Dimension(200, 600));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Meshes",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 14)
+        ));
 
         meshListModel = new DefaultListModel<>();
         refreshMeshList();
@@ -53,12 +62,16 @@ public class Stage2Panel extends JPanel {
         meshList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 updateShapeList();
+                updateControlsForShape(); // Reset controls when mesh changes
             }
         });
 
-        panel.add(new JScrollPane(meshList), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(meshList);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
         JButton refreshBtn = new JButton("Refresh");
+        refreshBtn.setToolTipText("Refresh the mesh list from the scene");
         refreshBtn.addActionListener(e -> {
             refreshMeshList();
             updateShapeList();
@@ -73,15 +86,21 @@ public class Stage2Panel extends JPanel {
         for (Mesh mesh : scene.getMeshes()) {
             meshListModel.addElement(mesh);
         }
+        if (meshListModel.getSize() > 0 && meshList.getSelectedIndex() == -1) {
+            meshList.setSelectedIndex(0);
+        }
     }
 
     private JPanel createShapePanel() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setPreferredSize(new Dimension(200, 600));
-
-        JLabel title = new JLabel("Plane Shapes");
-        title.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(title, BorderLayout.NORTH);
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Plane Shapes",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 14)
+        ));
 
         shapeListModel = new DefaultListModel<>();
         shapeList = new JList<>(shapeListModel);
@@ -92,100 +111,136 @@ public class Stage2Panel extends JPanel {
             }
         });
 
-        panel.add(new JScrollPane(shapeList), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(shapeList);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-        JButton addSquareBtn = new JButton("Add Square");
-        JButton addCircleBtn = new JButton("Add Circle");
-        JButton removeBtn = new JButton("Remove");
+        // Shape actions panel
+        JPanel actionsPanel = new JPanel(new GridLayout(4, 1, 5, 5));
+        actionsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+
+        JButton addSquareBtn = new JButton("+ Add Square");
+        JButton addCircleBtn = new JButton("+ Add Circle");
+        JButton removeBtn = new JButton("- Remove Shape");
+        intrudeBtn = new JButton("Intrude Shape");
+
+        addSquareBtn.setToolTipText("Add a square shape to the selected mesh");
+        addCircleBtn.setToolTipText("Add a circle shape to the selected mesh");
+        removeBtn.setToolTipText("Remove the selected shape");
+        intrudeBtn.setToolTipText("Intrude the selected shape (requires depth > 0)");
 
         addSquareBtn.addActionListener(e -> addShape("Square"));
         addCircleBtn.addActionListener(e -> addShape("Circle"));
         removeBtn.addActionListener(e -> removeShape());
-
-        buttonPanel.add(addSquareBtn);
-        buttonPanel.add(addCircleBtn);
-        buttonPanel.add(removeBtn);
-
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        JButton intrudeBtn = new JButton("Intrude");
         intrudeBtn.addActionListener(e -> intrudeShape());
-        panel.add(intrudeBtn, BorderLayout.NORTH);
+
+        actionsPanel.add(addSquareBtn);
+        actionsPanel.add(addCircleBtn);
+        actionsPanel.add(removeBtn);
+        actionsPanel.add(intrudeBtn);
+
+        panel.add(actionsPanel, BorderLayout.SOUTH);
 
         return panel;
     }
 
     private JPanel createControlsPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setPreferredSize(new Dimension(350, 600));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
 
-        int row = 0;
+        // Top info panel
+        JPanel infoPanel = new JPanel(new BorderLayout());
+        infoPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEtchedBorder(),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        shapeInfoLabel = new JLabel("No shape selected", SwingConstants.CENTER);
+        shapeInfoLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        infoPanel.add(shapeInfoLabel, BorderLayout.CENTER);
+        panel.add(infoPanel, BorderLayout.NORTH);
 
-        gbc.gridx = 0;
-        gbc.gridy = row++;
-        gbc.gridwidth = 3;
-        shapeInfoLabel = new JLabel("No shape selected");
-        shapeInfoLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(shapeInfoLabel, gbc);
-        gbc.gridwidth = 1;
+        // Main controls in scrollpane
+        JPanel controlsContainer = new JPanel();
+        controlsContainer.setLayout(new BoxLayout(controlsContainer, BoxLayout.Y_AXIS));
 
-        gbc.gridx = 0;
-        gbc.gridy = row++;
-        gbc.gridwidth = 3;
-        JLabel planeTitle = new JLabel("Plane Selection");
-        planeTitle.setFont(new Font("Arial", Font.BOLD, 16));
-        panel.add(planeTitle, gbc);
-        gbc.gridwidth = 1;
+        controlsContainer.add(createPlaneSelectionPanel());
+        controlsContainer.add(Box.createVerticalStrut(10));
+        controlsContainer.add(createPositionPanel());
+        controlsContainer.add(Box.createVerticalStrut(10));
+        controlsContainer.add(createDimensionsPanel());
+        controlsContainer.add(Box.createVerticalStrut(10));
+        controlsContainer.add(createRotationPanel());
+        controlsContainer.add(Box.createVerticalStrut(10));
+        controlsContainer.add(createDepthPanel());
+        controlsContainer.add(Box.createVerticalGlue());
 
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        panel.add(new JLabel("Plane:"), gbc);
-        gbc.gridx = 1;
-        gbc.gridwidth = 2;
+        JScrollPane scrollPane = new JScrollPane(controlsContainer);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setBorder(null);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createPlaneSelectionPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Plane Selection",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 14)
+        ));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+
+        JPanel innerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        innerPanel.add(new JLabel("Plane:"));
         planeCombo = new JComboBox<>(new String[]{"Front", "Back", "Top", "Bottom", "Right", "Left"});
+        planeCombo.setPreferredSize(new Dimension(150, 25));
         planeCombo.addActionListener(e -> updateShapePlane());
-        panel.add(planeCombo, gbc);
-        gbc.gridwidth = 1;
-        row++;
+        innerPanel.add(planeCombo);
 
-        gbc.gridx = 0;
-        gbc.gridy = row++;
-        gbc.gridwidth = 3;
-        gbc.insets = new Insets(20, 10, 10, 10);
-        JLabel posTitle = new JLabel("Position");
-        posTitle.setFont(new Font("Arial", Font.BOLD, 16));
-        panel.add(posTitle, gbc);
-        gbc.gridwidth = 1;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        panel.add(innerPanel, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createPositionPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Position",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 14)
+        ));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
 
         xLabel = new JLabel("0.00");
         xSlider = new JSlider(-100, 100, 0);
-        row = addSliderRow(panel, row, "X:", xSlider, xLabel, v -> updateShapeProperty("x", v));
+        panel.add(createSliderRow("X:", xSlider, xLabel, v -> updateShapeProperty("x", v), false));
 
         yLabel = new JLabel("0.00");
         ySlider = new JSlider(-100, 100, 0);
-        row = addSliderRow(panel, row, "Y:", ySlider, yLabel, v -> updateShapeProperty("y", v));
+        panel.add(createSliderRow("Y:", ySlider, yLabel, v -> updateShapeProperty("y", v), false));
 
-        gbc.gridx = 0;
-        gbc.gridy = row++;
-        gbc.gridwidth = 3;
-        gbc.insets = new Insets(20, 10, 10, 10);
-        JLabel dimTitle = new JLabel("Dimensions");
-        dimTitle.setFont(new Font("Arial", Font.BOLD, 16));
-        panel.add(dimTitle, gbc);
-        gbc.gridwidth = 1;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        return panel;
+    }
 
-        dimensionPanel = new JPanel(new GridBagLayout());
-        gbc.gridx = 0;
-        gbc.gridy = row++;
-        gbc.gridwidth = 3;
-        panel.add(dimensionPanel, gbc);
-        gbc.gridwidth = 1;
+    private JPanel createDimensionsPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Dimensions",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 14)
+        ));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
+
+        dimensionPanel = new JPanel();
+        dimensionPanel.setLayout(new BoxLayout(dimensionPanel, BoxLayout.Y_AXIS));
 
         widthLabel = new JLabel("0.30");
         widthSlider = new JSlider(5, 150, 30);
@@ -196,141 +251,98 @@ public class Stage2Panel extends JPanel {
         radiusLabel = new JLabel("0.15");
         radiusSlider = new JSlider(5, 150, 15);
 
+        panel.add(dimensionPanel);
+        return panel;
+    }
+
+    private JPanel createRotationPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Rotation",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 14)
+        ));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+
         rotationLabel = new JLabel("0.00");
         rotationSlider = new JSlider(-180, 180, 0);
-        row = addSliderRow(panel, row, "Rotation:", rotationSlider, rotationLabel, v -> updateShapeProperty("rotation", v));
-
-        depthLabel = new JLabel("0.00");
-        depthSlider = new JSlider(0, 150, 0);
-        row = addSliderRow(panel, row, "Depth:", depthSlider, depthLabel, v -> updateShapeProperty("depth", v));
+        panel.add(createSliderRow("Angle:", rotationSlider, rotationLabel, v -> updateShapeProperty("rotation", v), true));
 
         return panel;
     }
 
-    private int addSliderRow(JPanel panel, int row, String label, JSlider slider, JLabel valueLabel, SliderCallback callback) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.gridy = row;
+    private JPanel createDepthPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Depth (for Intrusion)",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 14)
+        ));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+
+        depthLabel = new JLabel("0.00");
+        depthSlider = new JSlider(0, 150, 0);
+        panel.add(createSliderRow("Depth:", depthSlider, depthLabel, v -> updateShapeProperty("depth", v), false));
+
+        return panel;
+    }
+
+    private JPanel createSliderRow(String label, JSlider slider, JLabel valueLabel, SliderCallback callback, boolean isRotation) {
+        JPanel rowPanel = new JPanel(new BorderLayout(10, 5));
+        rowPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
         JLabel titleLabel = new JLabel(label);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        slider.setPreferredSize(new Dimension(200, 40));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        titleLabel.setPreferredSize(new Dimension(60, 25));
+        rowPanel.add(titleLabel, BorderLayout.WEST);
 
-        JPanel rowPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints rowGbc = new GridBagConstraints();
-        rowGbc.fill = GridBagConstraints.HORIZONTAL;
-        rowGbc.gridy = 0;
+        slider.setMajorTickSpacing(isRotation ? 45 : 25);
+        slider.setPaintTicks(true);
+        slider.setSnapToTicks(false);
+        rowPanel.add(slider, BorderLayout.CENTER);
 
-        rowGbc.gridx = 0;
-        rowGbc.weightx = 0.0;
-        rowPanel.add(titleLabel, rowGbc);
-
-        rowGbc.gridx = 1;
-        rowGbc.weightx = 1.0;
-        rowGbc.insets = new Insets(0, 10, 0, 10);
-        rowPanel.add(slider, rowGbc);
-
-        rowGbc.gridx = 2;
-        rowGbc.weightx = 0.0;
-        rowGbc.insets = new Insets(0, 0, 0, 0);
-        valueLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        valueLabel.setPreferredSize(new Dimension(50, 20));
-        rowPanel.add(valueLabel, rowGbc);
-
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weightx = 1.0;
-        panel.add(rowPanel, gbc);
+        valueLabel.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        valueLabel.setPreferredSize(new Dimension(50, 25));
+        valueLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        rowPanel.add(valueLabel, BorderLayout.EAST);
 
         slider.addChangeListener(e -> {
-            float value;
-            if (label.equals("Rotation:")) {
-                value = slider.getValue();
-            } else {
-                value = slider.getValue() / 100.0f;
-            }
+            float value = isRotation ? slider.getValue() : slider.getValue() / 100.0f;
             callback.onValueChanged(value);
             valueLabel.setText(String.format("%.2f", value));
         });
 
-        return row + 1;
+        return rowPanel;
     }
 
     private void updateDimensionControls(PlaneShape shape) {
         dimensionPanel.removeAll();
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weightx = 1.0;
-
-        int row = 0;
-
         if (shape instanceof SquareShape) {
-            row = addSliderToDimensionPanel(dimensionPanel, row, "Width:", widthSlider, widthLabel, v -> updateShapeProperty("width", v));
-            row = addSliderToDimensionPanel(dimensionPanel, row, "Height:", heightSlider, heightLabel, v -> updateShapeProperty("height", v));
+            dimensionPanel.add(createSliderRow("Width:", widthSlider, widthLabel, v -> updateShapeProperty("width", v), false));
+            dimensionPanel.add(createSliderRow("Height:", heightSlider, heightLabel, v -> updateShapeProperty("height", v), false));
         } else if (shape instanceof CircleShape) {
-            row = addSliderToDimensionPanel(dimensionPanel, row, "Radius:", radiusSlider, radiusLabel, v -> updateShapeProperty("radius", v));
+            dimensionPanel.add(createSliderRow("Radius:", radiusSlider, radiusLabel, v -> updateShapeProperty("radius", v), false));
         }
 
         dimensionPanel.revalidate();
         dimensionPanel.repaint();
     }
 
-    private int addSliderToDimensionPanel(JPanel panel, int row, String label, JSlider slider, JLabel valueLabel, SliderCallback callback) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.gridy = row;
-
-        JLabel titleLabel = new JLabel(label);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        slider.setPreferredSize(new Dimension(200, 40));
-
-        JPanel rowPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints rowGbc = new GridBagConstraints();
-        rowGbc.fill = GridBagConstraints.HORIZONTAL;
-        rowGbc.gridy = 0;
-
-        rowGbc.gridx = 0;
-        rowGbc.weightx = 0.0;
-        rowPanel.add(titleLabel, rowGbc);
-
-        rowGbc.gridx = 1;
-        rowGbc.weightx = 1.0;
-        rowGbc.insets = new Insets(0, 10, 0, 10);
-        rowPanel.add(slider, rowGbc);
-
-        rowGbc.gridx = 2;
-        rowGbc.weightx = 0.0;
-        rowGbc.insets = new Insets(0, 0, 0, 0);
-        valueLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        valueLabel.setPreferredSize(new Dimension(50, 20));
-        rowPanel.add(valueLabel, rowGbc);
-
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weightx = 1.0;
-        panel.add(rowPanel, gbc);
-
-        for (var l : slider.getChangeListeners()) slider.removeChangeListener(l);
-        slider.addChangeListener(e -> {
-            float value = slider.getValue() / 100.0f;
-            callback.onValueChanged(value);
-            valueLabel.setText(String.format("%.2f", value));
-        });
-
-        return row + 1;
-    }
-
     private void addShape(String type) {
         Mesh mesh = meshList.getSelectedValue();
         if (mesh == null) {
-            JOptionPane.showMessageDialog(this, "Please select a mesh first");
+            JOptionPane.showMessageDialog(this,
+                    "Please select a mesh first",
+                    "No Mesh Selected",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -352,9 +364,26 @@ public class Stage2Panel extends JPanel {
     private void removeShape() {
         PlaneShape shape = shapeList.getSelectedValue();
         Mesh mesh = meshList.getSelectedValue();
-        if (shape != null && mesh != null) {
-            mesh.removeShape(shape);
-            updateShapeList();
+
+        if (shape == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a shape to remove",
+                    "No Shape Selected",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (mesh != null) {
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Are you sure you want to remove '" + shape.name + "'?",
+                    "Confirm Removal",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                mesh.removeShape(shape);
+                updateShapeList();
+            }
         }
     }
 
@@ -366,6 +395,7 @@ public class Stage2Panel extends JPanel {
                 shapeListModel.addElement(shape);
             }
         }
+        updateControlsForShape();
     }
 
     private void updateControlsForShape() {
@@ -375,10 +405,14 @@ public class Stage2Panel extends JPanel {
             dimensionPanel.removeAll();
             dimensionPanel.revalidate();
             dimensionPanel.repaint();
+            intrudeBtn.setEnabled(false);
+            setControlsEnabled(false);
             return;
         }
 
-        shapeInfoLabel.setText(shape.name);
+        shapeInfoLabel.setText("Editing: " + shape.name);
+        setControlsEnabled(true);
+        intrudeBtn.setEnabled(true);
 
         removeListeners();
 
@@ -405,6 +439,17 @@ public class Stage2Panel extends JPanel {
 
         updateDimensionControls(shape);
         addListeners();
+    }
+
+    private void setControlsEnabled(boolean enabled) {
+        planeCombo.setEnabled(enabled);
+        xSlider.setEnabled(enabled);
+        ySlider.setEnabled(enabled);
+        rotationSlider.setEnabled(enabled);
+        depthSlider.setEnabled(enabled);
+        widthSlider.setEnabled(enabled);
+        heightSlider.setEnabled(enabled);
+        radiusSlider.setEnabled(enabled);
     }
 
     private void removeListeners() {
@@ -462,14 +507,24 @@ public class Stage2Panel extends JPanel {
     private void intrudeShape() {
         PlaneShape shape = shapeList.getSelectedValue();
         if (shape == null) {
-            JOptionPane.showMessageDialog(this, "Please select a shape first");
+            JOptionPane.showMessageDialog(this,
+                    "Please select a shape first",
+                    "No Shape Selected",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
         if (shape.depth <= 0) {
-            JOptionPane.showMessageDialog(this, "Please set depth > 0 before intruding");
+            JOptionPane.showMessageDialog(this,
+                    "Please set depth > 0 before intruding.\nCurrent depth: " + String.format("%.2f", shape.depth),
+                    "Invalid Depth",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
         shape.intruded = true;
+        JOptionPane.showMessageDialog(this,
+                "Shape '" + shape.name + "' has been intruded with depth " + String.format("%.2f", shape.depth),
+                "Intrusion Complete",
+                JOptionPane.INFORMATION_MESSAGE);
         shapeList.repaint();
     }
 
