@@ -6,6 +6,9 @@ import com.google.gson.JsonObject;
 import glx.mesh.CubeMesh;
 import glx.mesh.CylinderMesh;
 import glx.mesh.Mesh;
+import glx.shape.CircleShape;
+import glx.shape.PlaneShape;
+import glx.shape.SquareShape;
 
 import java.util.List;
 
@@ -26,6 +29,25 @@ public class GLXWriter {
                 result.append(generateCylinderJSON(mesh));
             }
 
+            // Add Stage 2 shapes (intruded only)
+            List<PlaneShape> shapes = mesh.getShapes();
+            for (PlaneShape shape : shapes) {
+                if (shape.intruded && shape.depth > 0) {
+                    result.append("\n\n");
+                    result.append(generateIntrudedShapeJSON(shape, i + 1));
+                }
+                // Add Stage 3 shapes (extruded only)
+                if (shape.extruded && shape.depth > 0) {
+                    result.append("\n\n");
+                    result.append(generateExtrudedShapeJSON(shape, i + 1));
+                }
+                // Add Stage 4 shapes (no intrusion/extrusion)
+                if (!shape.intruded && !shape.extruded) {
+                    result.append("\n\n");
+                    result.append(generatePlaneShapeJSON(shape, i + 1));
+                }
+            }
+
             if (i < meshes.size() - 1) {
                 result.append("\n\n");
             }
@@ -37,19 +59,16 @@ public class GLXWriter {
     private static String generateCubeJSON(Mesh mesh) {
         JsonObject cube = new JsonObject();
 
-        // Co-ordinates
         JsonObject coordinates = new JsonObject();
         coordinates.addProperty("x", formatNumber(mesh.getPositionX()));
         coordinates.addProperty("y", formatNumber(mesh.getPositionY()));
         coordinates.addProperty("z", formatNumber(mesh.getPositionZ()));
 
-        // Size
         JsonObject size = new JsonObject();
         size.addProperty("h", formatNumber(mesh.getHeight()));
         size.addProperty("w", formatNumber(mesh.getWidth()));
         size.addProperty("l", formatNumber(mesh.getLength()));
 
-        // Rotation
         JsonObject rotation = new JsonObject();
         rotation.addProperty("xRot", formatRotation(mesh.getRotationX()));
         rotation.addProperty("yRot", formatRotation(mesh.getRotationY()));
@@ -68,17 +87,14 @@ public class GLXWriter {
     private static String generateCylinderJSON(Mesh mesh) {
         JsonObject cylinder = new JsonObject();
 
-        // Co-ordinates
         JsonObject coordinates = new JsonObject();
         coordinates.addProperty("x", formatNumber(mesh.getPositionX()));
         coordinates.addProperty("y", formatNumber(mesh.getPositionY()));
         coordinates.addProperty("z", formatNumber(mesh.getPositionZ()));
 
-        // Size (radius = width / 2)
         JsonObject size = new JsonObject();
         size.addProperty("r", formatNumber(mesh.getWidth() / 2.0f));
 
-        // Rotation
         JsonObject rotation = new JsonObject();
         rotation.addProperty("xRot", formatRotation(mesh.getRotationX()));
         rotation.addProperty("yRot", formatRotation(mesh.getRotationY()));
@@ -94,10 +110,61 @@ public class GLXWriter {
         return formatOutput(gson.toJson(wrapper));
     }
 
+    private static String generateIntrudedShapeJSON(PlaneShape shape, int nodeNumber) {
+        String shapeType = shape instanceof CircleShape ? "Circle" : "Square";
+        String typeName = "Cut-Intrude-" + shapeType;
+
+        JsonObject cutIntrude = new JsonObject();
+
+        // Coordinates
+        JsonObject coordinates = new JsonObject();
+        coordinates.addProperty("x", formatNumber(shape.x));
+        coordinates.addProperty("y", formatNumber(shape.y));
+
+        // Size
+        JsonObject size = new JsonObject();
+        if (shape instanceof CircleShape) {
+            size.addProperty("r", formatNumber(shape.radius));
+        } else {
+            size.addProperty("w", formatNumber(shape.width));
+            size.addProperty("h", formatNumber(shape.height));
+        }
+
+        // Intrude depth
+        JsonObject intrude = new JsonObject();
+        intrude.addProperty("depth", formatNumber(-shape.depth));
+
+        cutIntrude.add("co-ordinates", coordinates);
+        cutIntrude.add("size", size);
+        cutIntrude.add("intrude", intrude);
+
+        JsonObject cutIntrudeWrapper = new JsonObject();
+        cutIntrudeWrapper.addProperty("plane", convertPlaneNotation(shape.plane));
+        cutIntrudeWrapper.add("cut-intrude", cutIntrude);
+
+        JsonObject typeWrapper = new JsonObject();
+        typeWrapper.add(typeName, cutIntrudeWrapper);
+
+        JsonObject nodeWrapper = new JsonObject();
+        nodeWrapper.add("node " + nodeNumber, typeWrapper);
+
+        return formatOutput(gson.toJson(nodeWrapper));
+    }
+
+    private static String convertPlaneNotation(String plane) {
+        switch (plane) {
+            case "Front": return "+Z";
+            case "Back": return "-Z";
+            case "Top": return "+Y";
+            case "Bottom": return "-Y";
+            case "Right": return "+X";
+            case "Left": return "-X";
+            default: return plane;
+        }
+    }
+
     private static String formatNumber(float value) {
-        // Format to 2 decimal places, but remove trailing zeros
         String formatted = String.format("%.2f", value);
-        // Remove unnecessary .00
         if (formatted.endsWith(".00")) {
             return formatted.substring(0, formatted.length() - 3);
         }
@@ -109,24 +176,100 @@ public class GLXWriter {
     }
 
     private static String formatOutput(String json) {
-        // Remove outer braces
         json = json.trim();
         if (json.startsWith("{") && json.endsWith("}")) {
             json = json.substring(1, json.length() - 1).trim();
         }
 
-        // Remove quotes around main keys (Cube/Cylinder)
-        json = json.replaceFirst("\"(Cube|Cylinder)\":", "$1");
+        // Remove quotes around keys
+        json = json.replaceFirst("\"(Cube|Cylinder|node \\d+)\":", "$1 :");
+        json = json.replaceAll("\"(Cut-Intrude-Circle|Cut-Intrude-Square|Cut-Extrude-Circle|Cut-Extrude-Square|Plane-Circle|Plane-Square)\":", "$1");
+        json = json.replaceAll("\"(Co-ordinates|Size|size|rotation|plane|cut-intrude|cut-extrude|plane-shape|co-ordinates|intrude|extrude)\":", "$1 :");
+        json = json.replaceAll("\"(x|y|z|h|w|l|r|xRot|yRot|zRot|depth)\":", "$1 :");
 
-        // Remove quotes around property names but keep structure
-        json = json.replaceAll("\"(Co-ordinates|Size|size|rotation)\":", "$1");
-        json = json.replaceAll("\"(x|y|z|h|w|l|r|xRot|yRot|zRot)\":", "$1:");
-
-        // Clean up number formatting - remove quotes around numbers and rotation values
+        // Remove quotes around values
         json = json.replaceAll(": \"(\\d+\\.?\\d*)\"", ": $1");
         json = json.replaceAll(": \"(\\d+\\.?\\d*\\*)\"", ": $1");
+        json = json.replaceAll(": \"([+-][XYZ])\"", ": $1");
 
         return json;
+    }
+
+    private static String generateExtrudedShapeJSON(PlaneShape shape, int nodeNumber) {
+        String shapeType = shape instanceof CircleShape ? "Circle" : "Square";
+        String typeName = "Cut-Extrude-" + shapeType;
+
+        JsonObject cutExtrude = new JsonObject();
+
+        // Coordinates
+        JsonObject coordinates = new JsonObject();
+        coordinates.addProperty("x", formatNumber(shape.x));
+        coordinates.addProperty("y", formatNumber(shape.y));
+
+        // Size
+        JsonObject size = new JsonObject();
+        if (shape instanceof CircleShape) {
+            size.addProperty("r", formatNumber(shape.radius));
+        } else {
+            size.addProperty("w", formatNumber(shape.width));
+            size.addProperty("h", formatNumber(shape.height));
+        }
+
+        // Extrude depth
+        JsonObject extrude = new JsonObject();
+        extrude.addProperty("depth", formatNumber(shape.depth));
+
+        cutExtrude.add("co-ordinates", coordinates);
+        cutExtrude.add("size", size);
+        cutExtrude.add("extrude", extrude);
+
+        JsonObject cutExtrudeWrapper = new JsonObject();
+        cutExtrudeWrapper.addProperty("plane", convertPlaneNotation(shape.plane));
+        cutExtrudeWrapper.add("cut-extrude", cutExtrude);
+
+        JsonObject typeWrapper = new JsonObject();
+        typeWrapper.add(typeName, cutExtrudeWrapper);
+
+        JsonObject nodeWrapper = new JsonObject();
+        nodeWrapper.add("node " + nodeNumber, typeWrapper);
+
+        return formatOutput(gson.toJson(nodeWrapper));
+    }
+
+    private static String generatePlaneShapeJSON(PlaneShape shape, int nodeNumber) {
+        String shapeType = shape instanceof CircleShape ? "Circle" : "Square";
+        String typeName = "Plane-" + shapeType;
+
+        JsonObject planeShape = new JsonObject();
+
+        // Coordinates
+        JsonObject coordinates = new JsonObject();
+        coordinates.addProperty("x", formatNumber(shape.x));
+        coordinates.addProperty("y", formatNumber(shape.y));
+
+        // Size
+        JsonObject size = new JsonObject();
+        if (shape instanceof CircleShape) {
+            size.addProperty("r", formatNumber(shape.radius));
+        } else {
+            size.addProperty("w", formatNumber(shape.width));
+            size.addProperty("h", formatNumber(shape.height));
+        }
+
+        planeShape.add("co-ordinates", coordinates);
+        planeShape.add("size", size);
+
+        JsonObject planeShapeWrapper = new JsonObject();
+        planeShapeWrapper.addProperty("plane", convertPlaneNotation(shape.plane));
+        planeShapeWrapper.add("plane-shape", planeShape);
+
+        JsonObject typeWrapper = new JsonObject();
+        typeWrapper.add(typeName, planeShapeWrapper);
+
+        JsonObject nodeWrapper = new JsonObject();
+        nodeWrapper.add("node " + nodeNumber, typeWrapper);
+
+        return formatOutput(gson.toJson(nodeWrapper));
     }
 
     public static void saveToFile(List<Mesh> meshes, String filename) {
