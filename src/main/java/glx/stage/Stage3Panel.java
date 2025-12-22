@@ -9,7 +9,7 @@ import glx.shape.CircleShape;
 import javax.swing.*;
 import java.awt.*;
 
-public class Stage2Panel extends JPanel {
+public class Stage3Panel extends JPanel {
     private Scene scene;
     private DefaultListModel<Mesh> meshListModel;
     private JList<Mesh> meshList;
@@ -23,7 +23,7 @@ public class Stage2Panel extends JPanel {
 
     private int shapeCounter = 1;
 
-    public Stage2Panel(Scene scene) {
+    public Stage3Panel(Scene scene) {
         this.scene = scene;
         initializeUI();
     }
@@ -94,24 +94,23 @@ public class Stage2Panel extends JPanel {
 
         panel.add(new JScrollPane(shapeList), BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 5, 5));
         JButton addSquareBtn = new JButton("Add Square");
         JButton addCircleBtn = new JButton("Add Circle");
         JButton removeBtn = new JButton("Remove");
+        JButton extrudeBtn = new JButton("Extrude");
 
         addSquareBtn.addActionListener(e -> addShape("Square"));
         addCircleBtn.addActionListener(e -> addShape("Circle"));
         removeBtn.addActionListener(e -> removeShape());
+        extrudeBtn.addActionListener(e -> extrudeShape());
 
         buttonPanel.add(addSquareBtn);
         buttonPanel.add(addCircleBtn);
         buttonPanel.add(removeBtn);
+        buttonPanel.add(extrudeBtn);
 
         panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        JButton intrudeBtn = new JButton("Intrude");
-        intrudeBtn.addActionListener(e -> intrudeShape());
-        panel.add(intrudeBtn, BorderLayout.NORTH);
 
         return panel;
     }
@@ -259,14 +258,6 @@ public class Stage2Panel extends JPanel {
 
     private void updateDimensionControls(PlaneShape shape) {
         dimensionPanel.removeAll();
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weightx = 1.0;
 
         int row = 0;
 
@@ -459,17 +450,18 @@ public class Stage2Panel extends JPanel {
         }
     }
 
-    private void intrudeShape() {
+    private void extrudeShape() {
         PlaneShape shape = shapeList.getSelectedValue();
         if (shape == null) {
             JOptionPane.showMessageDialog(this, "Please select a shape first");
             return;
         }
         if (shape.depth <= 0) {
-            JOptionPane.showMessageDialog(this, "Please set depth > 0 before intruding");
+            JOptionPane.showMessageDialog(this, "Please set depth > 0 before extruding");
             return;
         }
-        shape.intruded = true;
+        shape.extruded = true;
+        shape.intruded = false;
         shapeList.repaint();
     }
 

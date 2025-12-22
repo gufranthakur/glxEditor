@@ -9,7 +9,7 @@ import glx.shape.CircleShape;
 import javax.swing.*;
 import java.awt.*;
 
-public class Stage2Panel extends JPanel {
+public class Stage4Panel extends JPanel {
     private Scene scene;
     private DefaultListModel<Mesh> meshListModel;
     private JList<Mesh> meshList;
@@ -17,13 +17,13 @@ public class Stage2Panel extends JPanel {
     private JList<PlaneShape> shapeList;
 
     private JComboBox<String> planeCombo;
-    private JSlider xSlider, ySlider, widthSlider, heightSlider, radiusSlider, rotationSlider, depthSlider;
-    private JLabel xLabel, yLabel, widthLabel, heightLabel, radiusLabel, rotationLabel, depthLabel, shapeInfoLabel;
+    private JSlider xSlider, ySlider, widthSlider, heightSlider, radiusSlider, rotationSlider;
+    private JLabel xLabel, yLabel, widthLabel, heightLabel, radiusLabel, rotationLabel, shapeInfoLabel;
     private JPanel dimensionPanel;
 
     private int shapeCounter = 1;
 
-    public Stage2Panel(Scene scene) {
+    public Stage4Panel(Scene scene) {
         this.scene = scene;
         initializeUI();
     }
@@ -108,10 +108,6 @@ public class Stage2Panel extends JPanel {
         buttonPanel.add(removeBtn);
 
         panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        JButton intrudeBtn = new JButton("Intrude");
-        intrudeBtn.addActionListener(e -> intrudeShape());
-        panel.add(intrudeBtn, BorderLayout.NORTH);
 
         return panel;
     }
@@ -200,10 +196,6 @@ public class Stage2Panel extends JPanel {
         rotationSlider = new JSlider(-180, 180, 0);
         row = addSliderRow(panel, row, "Rotation:", rotationSlider, rotationLabel, v -> updateShapeProperty("rotation", v));
 
-        depthLabel = new JLabel("0.00");
-        depthSlider = new JSlider(0, 150, 0);
-        row = addSliderRow(panel, row, "Depth:", depthSlider, depthLabel, v -> updateShapeProperty("depth", v));
-
         return panel;
     }
 
@@ -259,14 +251,6 @@ public class Stage2Panel extends JPanel {
 
     private void updateDimensionControls(PlaneShape shape) {
         dimensionPanel.removeAll();
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weightx = 1.0;
 
         int row = 0;
 
@@ -386,12 +370,10 @@ public class Stage2Panel extends JPanel {
         xSlider.setValue((int)(shape.x * 100));
         ySlider.setValue((int)(shape.y * 100));
         rotationSlider.setValue((int)shape.rotation);
-        depthSlider.setValue((int)(shape.depth * 100));
 
         xLabel.setText(String.format("%.2f", shape.x));
         yLabel.setText(String.format("%.2f", shape.y));
         rotationLabel.setText(String.format("%.2f", shape.rotation));
-        depthLabel.setText(String.format("%.2f", shape.depth));
 
         if (shape instanceof SquareShape) {
             widthSlider.setValue((int)(shape.width * 100));
@@ -411,7 +393,6 @@ public class Stage2Panel extends JPanel {
         for (var l : xSlider.getChangeListeners()) xSlider.removeChangeListener(l);
         for (var l : ySlider.getChangeListeners()) ySlider.removeChangeListener(l);
         for (var l : rotationSlider.getChangeListeners()) rotationSlider.removeChangeListener(l);
-        for (var l : depthSlider.getChangeListeners()) depthSlider.removeChangeListener(l);
     }
 
     private void addListeners() {
@@ -430,11 +411,6 @@ public class Stage2Panel extends JPanel {
             updateShapeProperty("rotation", v);
             rotationLabel.setText(String.format("%.2f", v));
         });
-        depthSlider.addChangeListener(e -> {
-            float v = depthSlider.getValue() / 100.0f;
-            updateShapeProperty("depth", v);
-            depthLabel.setText(String.format("%.2f", v));
-        });
     }
 
     private void updateShapeProperty(String prop, float value) {
@@ -447,7 +423,6 @@ public class Stage2Panel extends JPanel {
                 case "height": shape.height = value; break;
                 case "radius": shape.radius = value; break;
                 case "rotation": shape.rotation = value; break;
-                case "depth": shape.depth = value; break;
             }
         }
     }
@@ -457,20 +432,6 @@ public class Stage2Panel extends JPanel {
         if (shape != null) {
             shape.plane = (String) planeCombo.getSelectedItem();
         }
-    }
-
-    private void intrudeShape() {
-        PlaneShape shape = shapeList.getSelectedValue();
-        if (shape == null) {
-            JOptionPane.showMessageDialog(this, "Please select a shape first");
-            return;
-        }
-        if (shape.depth <= 0) {
-            JOptionPane.showMessageDialog(this, "Please set depth > 0 before intruding");
-            return;
-        }
-        shape.intruded = true;
-        shapeList.repaint();
     }
 
     @FunctionalInterface

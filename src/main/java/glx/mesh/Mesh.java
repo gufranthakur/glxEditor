@@ -4,9 +4,9 @@ import glx.shape.PlaneShape;
 
 public abstract class Mesh {
     protected String name;
-    protected float width = 1.0f;
-    protected float length = 1.0f;
-    protected float height = 1.0f;
+    public float width = 1.0f;
+    public float length = 1.0f;
+    public float height = 1.0f;
     protected float positionX = 0.0f;
     protected float positionY = 0.0f;
     protected float positionZ = 0.0f;

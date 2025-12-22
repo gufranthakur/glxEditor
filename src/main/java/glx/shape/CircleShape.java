@@ -12,8 +12,8 @@ public class CircleShape extends PlaneShape {
 
     @Override
     public void draw(Mesh mesh) {
-        if (!intruded) {
-            float r = size / 2.0f;
+        if (!intruded && !extruded) {
+            float r = radius;
 
             glColor3f(0.3f, 0.3f, 0.35f);
             glDisable(GL_DEPTH_TEST);
@@ -21,45 +21,45 @@ public class CircleShape extends PlaneShape {
 
             switch (plane) {
                 case "Front":
-                    glVertex3f(x, y, mesh.getLength() / 2.0f + 0.02f);
+                    glVertex3f(x, y, mesh.length / 2.0f + 0.02f);
                     for (int i = 0; i <= SEGMENTS; i++) {
-                        float angle = (float) (2 * Math.PI * i / SEGMENTS);
-                        glVertex3f(x + r * (float) Math.cos(angle), y + r * (float) Math.sin(angle), mesh.getLength() / 2.0f + 0.02f);
+                        float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                        glVertex3f(x + r * (float) Math.cos(angle), y + r * (float) Math.sin(angle), mesh.length / 2.0f + 0.02f);
                     }
                     break;
                 case "Back":
-                    glVertex3f(x, y, -mesh.getLength() / 2.0f - 0.02f);
+                    glVertex3f(x, y, -mesh.length / 2.0f - 0.02f);
                     for (int i = SEGMENTS; i >= 0; i--) {
-                        float angle = (float) (2 * Math.PI * i / SEGMENTS);
-                        glVertex3f(x + r * (float) Math.cos(angle), y + r * (float) Math.sin(angle), -mesh.getLength() / 2.0f - 0.02f);
+                        float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                        glVertex3f(x + r * (float) Math.cos(angle), y + r * (float) Math.sin(angle), -mesh.length / 2.0f - 0.02f);
                     }
                     break;
                 case "Top":
-                    glVertex3f(x, mesh.getHeight() / 2.0f + 0.02f, y);
+                    glVertex3f(x, mesh.height / 2.0f + 0.02f, y);
                     for (int i = 0; i <= SEGMENTS; i++) {
-                        float angle = (float) (2 * Math.PI * i / SEGMENTS);
-                        glVertex3f(x + r * (float) Math.cos(angle), mesh.getHeight() / 2.0f + 0.02f, y + r * (float) Math.sin(angle));
+                        float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                        glVertex3f(x + r * (float) Math.cos(angle), mesh.height / 2.0f + 0.02f, y + r * (float) Math.sin(angle));
                     }
                     break;
                 case "Bottom":
-                    glVertex3f(x, -mesh.getHeight() / 2.0f - 0.02f, y);
+                    glVertex3f(x, -mesh.height / 2.0f - 0.02f, y);
                     for (int i = SEGMENTS; i >= 0; i--) {
-                        float angle = (float) (2 * Math.PI * i / SEGMENTS);
-                        glVertex3f(x + r * (float) Math.cos(angle), -mesh.getHeight() / 2.0f - 0.02f, y + r * (float) Math.sin(angle));
+                        float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                        glVertex3f(x + r * (float) Math.cos(angle), -mesh.height / 2.0f - 0.02f, y + r * (float) Math.sin(angle));
                     }
                     break;
                 case "Right":
-                    glVertex3f(mesh.getWidth() / 2.0f + 0.02f, y, x);
+                    glVertex3f(mesh.width / 2.0f + 0.02f, y, x);
                     for (int i = 0; i <= SEGMENTS; i++) {
-                        float angle = (float) (2 * Math.PI * i / SEGMENTS);
-                        glVertex3f(mesh.getWidth() / 2.0f + 0.02f, y + r * (float) Math.cos(angle), x + r * (float) Math.sin(angle));
+                        float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                        glVertex3f(mesh.width / 2.0f + 0.02f, y + r * (float) Math.cos(angle), x + r * (float) Math.sin(angle));
                     }
                     break;
                 case "Left":
-                    glVertex3f(-mesh.getWidth() / 2.0f - 0.02f, y, x);
+                    glVertex3f(-mesh.width / 2.0f - 0.02f, y, x);
                     for (int i = SEGMENTS; i >= 0; i--) {
-                        float angle = (float) (2 * Math.PI * i / SEGMENTS);
-                        glVertex3f(-mesh.getWidth() / 2.0f - 0.02f, y + r * (float) Math.cos(angle), x + r * (float) Math.sin(angle));
+                        float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                        glVertex3f(-mesh.width / 2.0f - 0.02f, y + r * (float) Math.cos(angle), x + r * (float) Math.sin(angle));
                     }
                     break;
             }
@@ -71,10 +71,14 @@ public class CircleShape extends PlaneShape {
         if (depth > 0 && intruded) {
             drawIntrusionCylinder(mesh);
         }
+
+        if (depth > 0 && extruded) {
+            drawExtrusionCylinder(mesh);
+        }
     }
 
     private void drawIntrusionCylinder(Mesh mesh) {
-        float r = size / 2.0f;
+        float r = radius;
         float d = depth;
 
         glDisable(GL_DEPTH_TEST);
@@ -82,10 +86,10 @@ public class CircleShape extends PlaneShape {
 
         switch (plane) {
             case "Front":
-                float zFront = mesh.getLength() / 2.0f;
+                float zFront = mesh.length / 2.0f;
                 glBegin(GL_QUAD_STRIP);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     float cx = x + r * (float) Math.cos(angle);
                     float cy = y + r * (float) Math.sin(angle);
                     glVertex3f(cx, cy, zFront);
@@ -96,17 +100,17 @@ public class CircleShape extends PlaneShape {
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex3f(x, y, zFront - d);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     glVertex3f(x + r * (float) Math.cos(angle), y + r * (float) Math.sin(angle), zFront - d);
                 }
                 glEnd();
                 break;
 
             case "Back":
-                float zBack = -mesh.getLength() / 2.0f;
+                float zBack = -mesh.length / 2.0f;
                 glBegin(GL_QUAD_STRIP);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     float cx = x + r * (float) Math.cos(angle);
                     float cy = y + r * (float) Math.sin(angle);
                     glVertex3f(cx, cy, zBack);
@@ -117,17 +121,17 @@ public class CircleShape extends PlaneShape {
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex3f(x, y, zBack + d);
                 for (int i = SEGMENTS; i >= 0; i--) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     glVertex3f(x + r * (float) Math.cos(angle), y + r * (float) Math.sin(angle), zBack + d);
                 }
                 glEnd();
                 break;
 
             case "Top":
-                float yTop = mesh.getHeight() / 2.0f;
+                float yTop = mesh.height / 2.0f;
                 glBegin(GL_QUAD_STRIP);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     float cx = x + r * (float) Math.cos(angle);
                     float cz = y + r * (float) Math.sin(angle);
                     glVertex3f(cx, yTop, cz);
@@ -138,17 +142,17 @@ public class CircleShape extends PlaneShape {
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex3f(x, yTop - d, y);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     glVertex3f(x + r * (float) Math.cos(angle), yTop - d, y + r * (float) Math.sin(angle));
                 }
                 glEnd();
                 break;
 
             case "Bottom":
-                float yBottom = -mesh.getHeight() / 2.0f;
+                float yBottom = -mesh.height / 2.0f;
                 glBegin(GL_QUAD_STRIP);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     float cx = x + r * (float) Math.cos(angle);
                     float cz = y + r * (float) Math.sin(angle);
                     glVertex3f(cx, yBottom, cz);
@@ -159,17 +163,17 @@ public class CircleShape extends PlaneShape {
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex3f(x, yBottom + d, y);
                 for (int i = SEGMENTS; i >= 0; i--) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     glVertex3f(x + r * (float) Math.cos(angle), yBottom + d, y + r * (float) Math.sin(angle));
                 }
                 glEnd();
                 break;
 
             case "Right":
-                float xRight = mesh.getWidth() / 2.0f;
+                float xRight = mesh.width / 2.0f;
                 glBegin(GL_QUAD_STRIP);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     float cy = y + r * (float) Math.cos(angle);
                     float cz = x + r * (float) Math.sin(angle);
                     glVertex3f(xRight, cy, cz);
@@ -180,17 +184,17 @@ public class CircleShape extends PlaneShape {
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex3f(xRight - d, y, x);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     glVertex3f(xRight - d, y + r * (float) Math.cos(angle), x + r * (float) Math.sin(angle));
                 }
                 glEnd();
                 break;
 
             case "Left":
-                float xLeft = -mesh.getWidth() / 2.0f;
+                float xLeft = -mesh.width / 2.0f;
                 glBegin(GL_QUAD_STRIP);
                 for (int i = 0; i <= SEGMENTS; i++) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     float cy = y + r * (float) Math.cos(angle);
                     float cz = x + r * (float) Math.sin(angle);
                     glVertex3f(xLeft, cy, cz);
@@ -201,51 +205,151 @@ public class CircleShape extends PlaneShape {
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex3f(xLeft + d, y, x);
                 for (int i = SEGMENTS; i >= 0; i--) {
-                    float angle = (float) (2 * Math.PI * i / SEGMENTS);
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
                     glVertex3f(xLeft + d, y + r * (float) Math.cos(angle), x + r * (float) Math.sin(angle));
                 }
                 glEnd();
                 break;
         }
 
-        glColor3f(0.15f, 0.15f, 0.15f);
-        glLineWidth(1);
-        glBegin(GL_LINES);
+        glEnable(GL_DEPTH_TEST);
+    }
 
-        for (int i = 0; i < 4; i++) {
-            float angle = (float) (2 * Math.PI * i / 4);
-            float cx = x + r * (float) Math.cos(angle);
-            float cy = y + r * (float) Math.sin(angle);
+    private void drawExtrusionCylinder(Mesh mesh) {
+        float r = radius;
+        float d = depth;
 
-            switch (plane) {
-                case "Front":
-                    glVertex3f(cx, cy, mesh.getLength() / 2.0f);
-                    glVertex3f(cx, cy, mesh.getLength() / 2.0f - d);
-                    break;
-                case "Back":
-                    glVertex3f(cx, cy, -mesh.getLength() / 2.0f);
-                    glVertex3f(cx, cy, -mesh.getLength() / 2.0f + d);
-                    break;
-                case "Top":
-                    glVertex3f(cx, mesh.getHeight() / 2.0f, cy);
-                    glVertex3f(cx, mesh.getHeight() / 2.0f - d, cy);
-                    break;
-                case "Bottom":
-                    glVertex3f(cx, -mesh.getHeight() / 2.0f, cy);
-                    glVertex3f(cx, -mesh.getHeight() / 2.0f + d, cy);
-                    break;
-                case "Right":
-                    glVertex3f(mesh.getWidth() / 2.0f, cy, cx);
-                    glVertex3f(mesh.getWidth() / 2.0f - d, cy, cx);
-                    break;
-                case "Left":
-                    glVertex3f(-mesh.getWidth() / 2.0f, cy, cx);
-                    glVertex3f(-mesh.getWidth() / 2.0f + d, cy, cx);
-                    break;
-            }
+        glDisable(GL_DEPTH_TEST);
+        glColor3f(0.2f, 0.2f, 0.2f);
+
+        switch (plane) {
+            case "Front":
+                float zFront = mesh.length / 2.0f;
+                glBegin(GL_QUAD_STRIP);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    float cx = x + r * (float) Math.cos(angle);
+                    float cy = y + r * (float) Math.sin(angle);
+                    glVertex3f(cx, cy, zFront);
+                    glVertex3f(cx, cy, zFront + d);
+                }
+                glEnd();
+
+                glBegin(GL_TRIANGLE_FAN);
+                glVertex3f(x, y, zFront + d);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    glVertex3f(x + r * (float) Math.cos(angle), y + r * (float) Math.sin(angle), zFront + d);
+                }
+                glEnd();
+                break;
+
+            case "Back":
+                float zBack = -mesh.length / 2.0f;
+                glBegin(GL_QUAD_STRIP);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    float cx = x + r * (float) Math.cos(angle);
+                    float cy = y + r * (float) Math.sin(angle);
+                    glVertex3f(cx, cy, zBack);
+                    glVertex3f(cx, cy, zBack - d);
+                }
+                glEnd();
+
+                glBegin(GL_TRIANGLE_FAN);
+                glVertex3f(x, y, zBack - d);
+                for (int i = SEGMENTS; i >= 0; i--) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    glVertex3f(x + r * (float) Math.cos(angle), y + r * (float) Math.sin(angle), zBack - d);
+                }
+                glEnd();
+                break;
+
+            case "Top":
+                float yTop = mesh.height / 2.0f;
+                glBegin(GL_QUAD_STRIP);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    float cx = x + r * (float) Math.cos(angle);
+                    float cz = y + r * (float) Math.sin(angle);
+                    glVertex3f(cx, yTop, cz);
+                    glVertex3f(cx, yTop + d, cz);
+                }
+                glEnd();
+
+                glBegin(GL_TRIANGLE_FAN);
+                glVertex3f(x, yTop + d, y);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    glVertex3f(x + r * (float) Math.cos(angle), yTop + d, y + r * (float) Math.sin(angle));
+                }
+                glEnd();
+                break;
+
+            case "Bottom":
+                float yBottom = -mesh.height / 2.0f;
+                glBegin(GL_QUAD_STRIP);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    float cx = x + r * (float) Math.cos(angle);
+                    float cz = y + r * (float) Math.sin(angle);
+                    glVertex3f(cx, yBottom, cz);
+                    glVertex3f(cx, yBottom - d, cz);
+                }
+                glEnd();
+
+                glBegin(GL_TRIANGLE_FAN);
+                glVertex3f(x, yBottom - d, y);
+                for (int i = SEGMENTS; i >= 0; i--) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    glVertex3f(x + r * (float) Math.cos(angle), yBottom - d, y + r * (float) Math.sin(angle));
+                }
+                glEnd();
+                break;
+
+            case "Right":
+                float xRight = mesh.width / 2.0f;
+                glBegin(GL_QUAD_STRIP);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    float cy = y + r * (float) Math.cos(angle);
+                    float cz = x + r * (float) Math.sin(angle);
+                    glVertex3f(xRight, cy, cz);
+                    glVertex3f(xRight + d, cy, cz);
+                }
+                glEnd();
+
+                glBegin(GL_TRIANGLE_FAN);
+                glVertex3f(xRight + d, y, x);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    glVertex3f(xRight + d, y + r * (float) Math.cos(angle), x + r * (float) Math.sin(angle));
+                }
+                glEnd();
+                break;
+
+            case "Left":
+                float xLeft = -mesh.width / 2.0f;
+                glBegin(GL_QUAD_STRIP);
+                for (int i = 0; i <= SEGMENTS; i++) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    float cy = y + r * (float) Math.cos(angle);
+                    float cz = x + r * (float) Math.sin(angle);
+                    glVertex3f(xLeft, cy, cz);
+                    glVertex3f(xLeft - d, cy, cz);
+                }
+                glEnd();
+
+                glBegin(GL_TRIANGLE_FAN);
+                glVertex3f(xLeft - d, y, x);
+                for (int i = SEGMENTS; i >= 0; i--) {
+                    float angle = (float) (2 * Math.PI * i / SEGMENTS) + (float) Math.toRadians(rotation);
+                    glVertex3f(xLeft - d, y + r * (float) Math.cos(angle), x + r * (float) Math.sin(angle));
+                }
+                glEnd();
+                break;
         }
 
-        glEnd();
         glEnable(GL_DEPTH_TEST);
     }
 }

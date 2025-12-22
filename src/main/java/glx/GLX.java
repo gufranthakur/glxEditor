@@ -3,6 +3,8 @@ package glx;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import glx.stage.Stage1Panel;
 import glx.stage.Stage2Panel;
+import glx.stage.Stage3Panel;
+import glx.stage.Stage4Panel;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 
@@ -48,6 +50,9 @@ public class GLX {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Stage 1", new Stage1Panel(functions, scene));
         tabbedPane.addTab("Stage 2", new Stage2Panel(scene));
+        tabbedPane.addTab("Stage 3", new Stage3Panel(scene));
+        tabbedPane.addTab("Stage 4", new Stage4Panel(scene));
+
 
         controlFrame.add(tabbedPane);
         controlFrame.pack();

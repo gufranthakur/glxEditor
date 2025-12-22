@@ -165,27 +165,4 @@ public class Functions {
         }
     }
 
-    public void updateShapeX(PlaneShape shape, float x) {
-        if (shape != null) {
-            shape.setX(x);
-        }
-    }
-
-    public void updateShapeY(PlaneShape shape, float y) {
-        if (shape != null) {
-            shape.setY(y);
-        }
-    }
-
-    public void updateShapeSize(PlaneShape shape, float size) {
-        if (shape != null && size > 0) {
-            shape.setSize(size);
-        }
-    }
-
-    public void updateShapePlane(PlaneShape shape, String plane) {
-        if (shape != null) {
-            shape.setPlane(plane);
-        }
-    }
 }
