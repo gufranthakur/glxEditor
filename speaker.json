@@ -1,0 +1,42 @@
+{
+  "nodes": [
+    {
+      "type": "Cube",
+      "data": {
+        "coordinates": {"x": 0, "y": 0, "z": 0},
+        "size": {"h": 0.5, "w": 0.3, "l": 0.35},
+        "rotation": {"xRot": 0, "yRot": 0, "zRot": 0}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Z",
+      "data": {
+        "coordinates": {"x": 0, "y": -0.1},
+        "size": {"r": 0.12},
+        "intrude": {"depth": -0.05}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Z",
+      "data": {
+        "coordinates": {"x": 0, "y": -0.1},
+        "size": {"r": 0.09},
+        "intrude": {"depth": -0.08}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Z",
+      "data": {
+        "coordinates": {"x": 0, "y": 0.12},
+        "size": {"r": 0.05},
+        "intrude": {"depth": -0.04}
+      }
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "nodes": [
+    {
+      "type": "Cube",
+      "data": {
+        "coordinates": {"x": 0, "y": 0.5, "z": 0},
+        "size": {"h": 0.4, "w": 1.2, "l": 0.2},
+        "rotation": {"xRot": 0, "yRot": 0, "zRot": 0}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Z",
+      "data": {
+        "coordinates": {"x": 0, "y": 0},
+        "size": {"r": 0.18},
+        "intrude": {"depth": -0.05}
+      }
+    },
+    {
+      "type": "Cut-Extrude-Circle",
+      "node": 1,
+      "plane": "+Z",
+      "data": {
+        "coordinates": {"x": 0, "y": 0},
+        "size": {"r": 0.12},
+        "extrude": {"depth": 0.04}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Z",
+      "data": {
+        "coordinates": {"x": 0, "y": 0},
+        "size": {"r": 0.08},
+        "intrude": {"depth": -0.02}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Z",
+      "data": {
+        "coordinates": {"x": -0.3, "y": 0},
+        "size": {"r": 0.01},
+        "intrude": {"depth": -0.01}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Z",
+      "data": {
+        "coordinates": {"x": 0.3, "y": 0},
+        "size": {"r": 0.01},
+        "intrude": {"depth": -0.01}
+      }
+    },
+    {
+      "type": "Cylinder",
+      "data": {
+        "coordinates": {"x": 0, "y": 0.25, "z": 0},
+        "size": {"r": 0.08},
+        "rotation": {"xRot": 0, "yRot": 0, "zRot": 0}
+      }
+    },
+    {
+      "type": "Cube",
+      "data": {
+        "coordinates": {"x": 0, "y": 0, "z": 0},
+        "size": {"h": 0.3, "w": 0.6, "l": 0.4},
+        "rotation": {"xRot": 0, "yRot": 0, "zRot": 0}
+      }
+    }
+  ]
+}

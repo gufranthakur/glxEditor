@@ -1,0 +1,110 @@
+{
+  "nodes": [
+    {
+      "type": "Cylinder",
+      "data": {
+        "coordinates": {"x": 0, "y": 0, "z": 0},
+        "size": {"r": 0.4},
+        "rotation": {"xRot": 90, "yRot": 0, "zRot": 0}
+      }
+    },
+    {
+      "type": "Cylinder",
+      "data": {
+        "coordinates": {"x": 0, "y": 0.1, "z": 0.1},
+        "size": {"r": 0.42},
+        "rotation": {"xRot": 90, "yRot": 0, "zRot": 0}
+      }
+    },
+    {
+      "type": "Cube",
+      "data": {
+        "coordinates": {"x": 0, "y": -0.6, "z": -0.5},
+        "size": {"h": 0.3, "w": 0.2, "l": 1.0},
+        "rotation": {"xRot": 0, "yRot": 0, "zRot": 0}
+      }
+    },
+    {
+      "type": "Cube",
+      "data": {
+        "coordinates": {"x": 0, "y": -0.6, "z": -1.0},
+        "size": {"h": 0.8, "w": 0.5, "l": 0.1},
+        "rotation": {"xRot": 0, "yRot": 0, "zRot": 0}
+      }
+    },
+    {
+      "type": "Cylinder",
+      "data": {
+        "coordinates": {"x": 0, "y": -0.4, "z": 0},
+        "size": {"r": 0.15},
+        "rotation": {"xRot": 0, "yRot": 0, "zRot": 0}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Y",
+      "data": {
+        "coordinates": {"x": 0, "y": 0},
+        "size": {"r": 0.35},
+        "intrude": {"depth": -0.1}
+      }
+    },
+    {
+      "type": "Cut-Extrude-Circle",
+      "node": 1,
+      "plane": "+Y",
+      "data": {
+        "coordinates": {"x": 0, "y": 0},
+        "size": {"r": 0.15},
+        "extrude": {"depth": 0.05}
+      }
+    },
+    {
+      "type": "Cut-Intrude-Circle",
+      "node": 1,
+      "plane": "+Y",
+      "data": {
+        "coordinates": {"x": 0, "y": 0},
+        "size": {"r": 0.08},
+        "intrude": {"depth": -0.05}
+      }
+    },
+    {
+      "type": "Plane-Circle",
+      "node": 1,
+      "plane": "+Y",
+      "data": {
+        "coordinates": {"x": 0.25, "y": 0},
+        "size": {"r": 0.04}
+      }
+    },
+    {
+      "type": "Plane-Circle",
+      "node": 1,
+      "plane": "+Y",
+      "data": {
+        "coordinates": {"x": -0.25, "y": 0},
+        "size": {"r": 0.04}
+      }
+    },
+    {
+      "type": "Plane-Circle",
+      "node": 1,
+      "plane": "+Y",
+      "data": {
+        "coordinates": {"x": 0, "y": 0.25},
+        "size": {"r": 0.04}
+      }
+    },
+    {
+      "type": "Plane-Circle",
+      "node": 1,
+      "plane": "+Y",
+      "data": {
+        "coordinates": {"x": 0, "y": -0.25},
+        "size": {"r": 0.04}
+      }
+    }
+  ]
+}

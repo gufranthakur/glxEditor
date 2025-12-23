@@ -8,7 +8,11 @@ import glx.mesh.TriangleMesh;
 import glx.mesh.Mesh;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class Stage1Panel extends JPanel {
     private Functions functions;
@@ -74,7 +78,7 @@ public class Stage1Panel extends JPanel {
         JLabel title = new JLabel("Meshes");
         title.setFont(new Font("Arial", Font.BOLD, 16));
 
-        JPanel buttonPanel = new JPanel(new GridLayout(6, 1, 5, 5));
+        JPanel buttonPanel = new JPanel(new GridLayout(7, 1, 5, 5));
 
         JButton addCubeButton = new JButton("Add Cube");
         addCubeButton.addActionListener(e -> addMesh("Cube"));
@@ -94,12 +98,17 @@ public class Stage1Panel extends JPanel {
         JButton removeButton = new JButton("Remove");
         removeButton.addActionListener(e -> removeMesh());
 
+        JButton loadButton = new JButton("📂 Load JSON");
+        loadButton.setToolTipText("Load meshes from GLX JSON file");
+        loadButton.addActionListener(e -> loadFromJSON());
+
         buttonPanel.add(addCubeButton);
         buttonPanel.add(addCylinderButton);
         buttonPanel.add(addDonutButton);
         buttonPanel.add(addTriangleButton);
         buttonPanel.add(duplicateButton);
         buttonPanel.add(removeButton);
+        buttonPanel.add(loadButton);
 
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
         topPanel.add(title, BorderLayout.NORTH);
@@ -493,6 +502,86 @@ public class Stage1Panel extends JPanel {
                 meshList.setSelectedIndex(0);
             } else {
                 updateControlsForSelectedMesh(null);
+            }
+        }
+    }
+
+    private void loadFromJSON() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Load GLX JSON File");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("JSON Files (*.json)", "json"));
+
+        int result = fileChooser.showOpenDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+
+            try {
+                // Load meshes from JSON file
+                List<Mesh> loadedMeshes = GLXReader.loadFromFile(selectedFile.getAbsolutePath());
+
+                if (loadedMeshes.isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                            "No meshes found in the JSON file.",
+                            "Empty File",
+                            JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // Ask if user wants to clear existing meshes
+                int clearOption = JOptionPane.showConfirmDialog(this,
+                        "Clear existing meshes before loading?\n" +
+                                "Yes = Replace all\nNo = Add to existing\nCancel = Abort",
+                        "Load Options",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+
+                if (clearOption == JOptionPane.CANCEL_OPTION) {
+                    return;
+                }
+
+                if (clearOption == JOptionPane.YES_OPTION) {
+                    // Clear existing meshes
+                    meshListModel.clear();
+                    List<Mesh> currentMeshes = scene.getMeshes();
+                    for (Mesh mesh : currentMeshes) {
+                        scene.removeMesh(mesh);
+                    }
+                    meshCounter = 1;
+                }
+
+                // Add loaded meshes to scene and list
+                for (Mesh mesh : loadedMeshes) {
+                    // Rename mesh if needed
+                    mesh.setName(mesh.getType() + " " + meshCounter++);
+                    scene.addMesh(mesh);
+                    meshListModel.addElement(mesh);
+                }
+
+                // Select first loaded mesh
+                if (!meshListModel.isEmpty()) {
+                    meshList.setSelectedIndex(clearOption == JOptionPane.YES_OPTION ? 0 : meshListModel.getSize() - loadedMeshes.size());
+                }
+
+                // Show success message
+                JOptionPane.showMessageDialog(this,
+                        "Successfully loaded " + loadedMeshes.size() + " mesh(es) from:\n" +
+                                selectedFile.getName(),
+                        "Load Successful",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error loading file:\n" + e.getMessage(),
+                        "Load Error",
+                        JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error parsing JSON:\n" + e.getMessage(),
+                        "Parse Error",
+                        JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
             }
         }
     }
