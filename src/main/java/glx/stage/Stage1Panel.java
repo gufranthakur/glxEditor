@@ -3,6 +3,8 @@ package glx.stage;
 import glx.*;
 import glx.mesh.CubeMesh;
 import glx.mesh.CylinderMesh;
+import glx.mesh.DonutMesh;
+import glx.mesh.TriangleMesh;
 import glx.mesh.Mesh;
 
 import javax.swing.*;
@@ -18,6 +20,9 @@ public class Stage1Panel extends JPanel {
     private JSlider widthSlider;
     private JSlider lengthSlider;
     private JSlider heightSlider;
+    private JSlider innerRadiusSlider;
+    private JSlider outerRadiusSlider;
+    private JSlider slopeFactorSlider;
     private JSlider xSlider;
     private JSlider ySlider;
     private JSlider zSlider;
@@ -28,6 +33,9 @@ public class Stage1Panel extends JPanel {
     private JLabel widthValueLabel;
     private JLabel lengthValueLabel;
     private JLabel heightValueLabel;
+    private JLabel innerRadiusValueLabel;
+    private JLabel outerRadiusValueLabel;
+    private JLabel slopeFactorValueLabel;
     private JLabel xValueLabel;
     private JLabel yValueLabel;
     private JLabel zValueLabel;
@@ -37,6 +45,8 @@ public class Stage1Panel extends JPanel {
     private JLabel volumeLabel;
     private JLabel surfaceAreaLabel;
     private JLabel meshTypeLabel;
+
+    private JPanel dimensionPanel;
 
     private int meshCounter = 1;
 
@@ -63,10 +73,8 @@ public class Stage1Panel extends JPanel {
 
         JLabel title = new JLabel("Meshes");
         title.setFont(new Font("Arial", Font.BOLD, 16));
-        panel.add(title, BorderLayout.NORTH);
 
-        // Button panel at top (after title)
-        JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        JPanel buttonPanel = new JPanel(new GridLayout(5, 1, 5, 5));
 
         JButton addCubeButton = new JButton("Add Cube");
         addCubeButton.addActionListener(e -> addMesh("Cube"));
@@ -74,14 +82,21 @@ public class Stage1Panel extends JPanel {
         JButton addCylinderButton = new JButton("Add Cylinder");
         addCylinderButton.addActionListener(e -> addMesh("Cylinder"));
 
+        JButton addDonutButton = new JButton("Add Donut");
+        addDonutButton.addActionListener(e -> addMesh("Donut"));
+
+        JButton addTriangleButton = new JButton("Add Triangle");
+        addTriangleButton.addActionListener(e -> addMesh("Triangle"));
+
         JButton removeButton = new JButton("Remove");
         removeButton.addActionListener(e -> removeMesh());
 
         buttonPanel.add(addCubeButton);
         buttonPanel.add(addCylinderButton);
+        buttonPanel.add(addDonutButton);
+        buttonPanel.add(addTriangleButton);
         buttonPanel.add(removeButton);
 
-        // Create a container for title and buttons
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
         topPanel.add(title, BorderLayout.NORTH);
         topPanel.add(buttonPanel, BorderLayout.CENTER);
@@ -131,20 +146,30 @@ public class Stage1Panel extends JPanel {
         panel.add(dimensionsTitle, gbc);
         gbc.gridwidth = 1;
 
+        dimensionPanel = new JPanel(new GridBagLayout());
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 3;
+        panel.add(dimensionPanel, gbc);
+        gbc.gridwidth = 1;
+
         widthValueLabel = createValueLabel();
         widthSlider = new JSlider(10, 300, 100);
-        row = addSliderRow(panel, row, "Width:", widthSlider, widthValueLabel,
-                value -> functions.updateWidth(value));
 
         lengthValueLabel = createValueLabel();
         lengthSlider = new JSlider(10, 300, 100);
-        row = addSliderRow(panel, row, "Length:", lengthSlider, lengthValueLabel,
-                value -> functions.updateLength(value));
 
         heightValueLabel = createValueLabel();
         heightSlider = new JSlider(10, 300, 100);
-        row = addSliderRow(panel, row, "Height:", heightSlider, heightValueLabel,
-                value -> functions.updateHeight(value));
+
+        innerRadiusValueLabel = createValueLabel();
+        innerRadiusSlider = new JSlider(10, 150, 30);
+
+        outerRadiusValueLabel = createValueLabel();
+        outerRadiusSlider = new JSlider(10, 300, 70);
+
+        slopeFactorValueLabel = createValueLabel();
+        slopeFactorSlider = new JSlider(0, 100, 50);
 
         gbc.gridx = 0;
         gbc.gridy = row++;
@@ -281,6 +306,135 @@ public class Stage1Panel extends JPanel {
         return row + 1;
     }
 
+    private void updateDimensionControls(Mesh mesh) {
+        dimensionPanel.removeAll();
+
+        int row = 0;
+
+        if (mesh instanceof CubeMesh) {
+            row = addSliderToDimensionPanel(row, "Width:", widthSlider, widthValueLabel,
+                    value -> functions.updateWidth(value));
+            row = addSliderToDimensionPanel(row, "Length:", lengthSlider, lengthValueLabel,
+                    value -> functions.updateLength(value));
+            row = addSliderToDimensionPanel(row, "Height:", heightSlider, heightValueLabel,
+                    value -> functions.updateHeight(value));
+        } else if (mesh instanceof CylinderMesh) {
+            row = addSliderToDimensionPanel(row, "Width:", widthSlider, widthValueLabel,
+                    value -> functions.updateWidth(value));
+            row = addSliderToDimensionPanel(row, "Length:", lengthSlider, lengthValueLabel,
+                    value -> functions.updateLength(value));
+            row = addSliderToDimensionPanel(row, "Height:", heightSlider, heightValueLabel,
+                    value -> functions.updateHeight(value));
+        } else if (mesh instanceof DonutMesh) {
+            row = addSliderToDimensionPanel(row, "Inner R:", innerRadiusSlider, innerRadiusValueLabel,
+                    value -> ((DonutMesh)mesh).setInnerRadius(value));
+            row = addSliderToDimensionPanel(row, "Outer R:", outerRadiusSlider, outerRadiusValueLabel,
+                    value -> ((DonutMesh)mesh).setOuterRadius(value));
+        } else if (mesh instanceof TriangleMesh) {
+            row = addSliderToDimensionPanel(row, "Width:", widthSlider, widthValueLabel,
+                    value -> functions.updateWidth(value));
+            row = addSliderToDimensionPanel(row, "Length:", lengthSlider, lengthValueLabel,
+                    value -> functions.updateLength(value));
+            row = addSliderToDimensionPanel(row, "Height:", heightSlider, heightValueLabel,
+                    value -> functions.updateHeight(value));
+            row = addSliderToDimensionPanelSpecial(row, "Slope:", slopeFactorSlider, slopeFactorValueLabel,
+                    value -> ((TriangleMesh)mesh).setSlopeFactor(value));
+        }
+
+        dimensionPanel.revalidate();
+        dimensionPanel.repaint();
+    }
+
+    private int addSliderToDimensionPanel(int row, String label, JSlider slider, JLabel valueLabel, SliderCallback callback) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.gridy = row;
+
+        JLabel titleLabel = new JLabel(label);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        slider.setPreferredSize(new Dimension(300, 40));
+
+        JPanel rowPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints rowGbc = new GridBagConstraints();
+        rowGbc.fill = GridBagConstraints.HORIZONTAL;
+        rowGbc.gridy = 0;
+
+        rowGbc.gridx = 0;
+        rowGbc.weightx = 0.0;
+        rowPanel.add(titleLabel, rowGbc);
+
+        rowGbc.gridx = 1;
+        rowGbc.weightx = 1.0;
+        rowGbc.insets = new Insets(0, 10, 0, 10);
+        rowPanel.add(slider, rowGbc);
+
+        rowGbc.gridx = 2;
+        rowGbc.weightx = 0.0;
+        rowGbc.insets = new Insets(0, 0, 0, 0);
+        rowPanel.add(valueLabel, rowGbc);
+
+        gbc.gridx = 0;
+        gbc.gridwidth = 3;
+        gbc.weightx = 1.0;
+        dimensionPanel.add(rowPanel, gbc);
+
+        for (var listener : slider.getChangeListeners()) slider.removeChangeListener(listener);
+        slider.addChangeListener(e -> {
+            float value = slider.getValue() / 100.0f;
+            callback.onValueChanged(value);
+            valueLabel.setText(String.format("%.2f", value));
+            updateInfo();
+        });
+
+        return row + 1;
+    }
+
+    private int addSliderToDimensionPanelSpecial(int row, String label, JSlider slider, JLabel valueLabel, SliderCallback callback) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.gridy = row;
+
+        JLabel titleLabel = new JLabel(label);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        slider.setPreferredSize(new Dimension(300, 40));
+
+        JPanel rowPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints rowGbc = new GridBagConstraints();
+        rowGbc.fill = GridBagConstraints.HORIZONTAL;
+        rowGbc.gridy = 0;
+
+        rowGbc.gridx = 0;
+        rowGbc.weightx = 0.0;
+        rowPanel.add(titleLabel, rowGbc);
+
+        rowGbc.gridx = 1;
+        rowGbc.weightx = 1.0;
+        rowGbc.insets = new Insets(0, 10, 0, 10);
+        rowPanel.add(slider, rowGbc);
+
+        rowGbc.gridx = 2;
+        rowGbc.weightx = 0.0;
+        rowGbc.insets = new Insets(0, 0, 0, 0);
+        rowPanel.add(valueLabel, rowGbc);
+
+        gbc.gridx = 0;
+        gbc.gridwidth = 3;
+        gbc.weightx = 1.0;
+        dimensionPanel.add(rowPanel, gbc);
+
+        for (var listener : slider.getChangeListeners()) slider.removeChangeListener(listener);
+        slider.addChangeListener(e -> {
+            float value = slider.getValue() / 100.0f;
+            callback.onValueChanged(value);
+            valueLabel.setText(String.format("%.2f", value));
+            updateInfo();
+        });
+
+        return row + 1;
+    }
+
     private JLabel createValueLabel() {
         JLabel label = new JLabel("1.00");
         label.setFont(new Font("Monospaced", Font.PLAIN, 14));
@@ -294,8 +448,12 @@ public class Stage1Panel extends JPanel {
 
         if (type.equals("Cube")) {
             mesh = new CubeMesh(name);
-        } else {
+        } else if (type.equals("Cylinder")) {
             mesh = new CylinderMesh(name);
+        } else if (type.equals("Donut")) {
+            mesh = new DonutMesh(name);
+        } else {
+            mesh = new TriangleMesh(name);
         }
 
         scene.addMesh(mesh);
@@ -321,6 +479,12 @@ public class Stage1Panel extends JPanel {
         Mesh selected = scene.getSelectedMesh();
         if (selected != null) {
             functions.resetAll();
+            if (selected instanceof DonutMesh) {
+                ((DonutMesh)selected).setInnerRadius(0.3f);
+                ((DonutMesh)selected).setOuterRadius(0.7f);
+            } else if (selected instanceof TriangleMesh) {
+                ((TriangleMesh)selected).setSlopeFactor(1.0f);
+            }
             updateControlsForSelectedMesh(selected);
         }
     }
@@ -330,6 +494,9 @@ public class Stage1Panel extends JPanel {
             meshTypeLabel.setText("No mesh selected");
             volumeLabel.setText("Volume: -");
             surfaceAreaLabel.setText("Surface Area: -");
+            dimensionPanel.removeAll();
+            dimensionPanel.revalidate();
+            dimensionPanel.repaint();
             return;
         }
 
@@ -337,9 +504,6 @@ public class Stage1Panel extends JPanel {
 
         removeAllListeners();
 
-        widthSlider.setValue((int)(mesh.getWidth() * 100));
-        lengthSlider.setValue((int)(mesh.getLength() * 100));
-        heightSlider.setValue((int)(mesh.getHeight() * 100));
         xSlider.setValue((int)(mesh.getPositionX() * 100));
         ySlider.setValue((int)(mesh.getPositionY() * 100));
         zSlider.setValue((int)(mesh.getPositionZ() * 100));
@@ -347,9 +511,6 @@ public class Stage1Panel extends JPanel {
         rySlider.setValue((int)mesh.getRotationY());
         rzSlider.setValue((int)mesh.getRotationZ());
 
-        widthValueLabel.setText(String.format("%.2f", mesh.getWidth()));
-        lengthValueLabel.setText(String.format("%.2f", mesh.getLength()));
-        heightValueLabel.setText(String.format("%.2f", mesh.getHeight()));
         xValueLabel.setText(String.format("%.2f", mesh.getPositionX()));
         yValueLabel.setText(String.format("%.2f", mesh.getPositionY()));
         zValueLabel.setText(String.format("%.2f", mesh.getPositionZ()));
@@ -357,6 +518,30 @@ public class Stage1Panel extends JPanel {
         ryValueLabel.setText(String.format("%.2f", mesh.getRotationY()));
         rzValueLabel.setText(String.format("%.2f", mesh.getRotationZ()));
 
+        if (mesh instanceof CubeMesh || mesh instanceof CylinderMesh || mesh instanceof TriangleMesh) {
+            widthSlider.setValue((int)(mesh.getWidth() * 100));
+            lengthSlider.setValue((int)(mesh.getLength() * 100));
+            heightSlider.setValue((int)(mesh.getHeight() * 100));
+
+            widthValueLabel.setText(String.format("%.2f", mesh.getWidth()));
+            lengthValueLabel.setText(String.format("%.2f", mesh.getLength()));
+            heightValueLabel.setText(String.format("%.2f", mesh.getHeight()));
+
+            if (mesh instanceof TriangleMesh) {
+                TriangleMesh triangle = (TriangleMesh) mesh;
+                slopeFactorSlider.setValue((int)(triangle.getSlopeFactor() * 100));
+                slopeFactorValueLabel.setText(String.format("%.2f", triangle.getSlopeFactor()));
+            }
+        } else if (mesh instanceof DonutMesh) {
+            DonutMesh donut = (DonutMesh) mesh;
+            innerRadiusSlider.setValue((int)(donut.getInnerRadius() * 100));
+            outerRadiusSlider.setValue((int)(donut.getOuterRadius() * 100));
+
+            innerRadiusValueLabel.setText(String.format("%.2f", donut.getInnerRadius()));
+            outerRadiusValueLabel.setText(String.format("%.2f", donut.getOuterRadius()));
+        }
+
+        updateDimensionControls(mesh);
         addAllListeners();
         updateInfo();
     }
