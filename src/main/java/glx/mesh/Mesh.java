@@ -23,6 +23,7 @@ public abstract class Mesh {
     public abstract float getVolume();
     public abstract float getSurfaceArea();
     public abstract String getType();
+    public abstract Mesh duplicate(String newName);
 
     public void addShape(PlaneShape shape) { shapes.add(shape); }
     public void removeShape(PlaneShape shape) { shapes.remove(shape); }

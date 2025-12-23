@@ -89,6 +89,21 @@ public class CylinderMesh extends Mesh {
     }
 
     @Override
+    public Mesh duplicate(String newName) {
+        CylinderMesh copy = new CylinderMesh(newName);
+        copy.width = this.width;
+        copy.length = this.length;
+        copy.height = this.height;
+        copy.positionX = this.positionX;
+        copy.positionY = this.positionY;
+        copy.positionZ = this.positionZ;
+        copy.rotationX = this.rotationX;
+        copy.rotationY = this.rotationY;
+        copy.rotationZ = this.rotationZ;
+        return copy;
+    }
+
+    @Override
     public float getVolume() {
         float radius = width / 2.0f;
         return (float) (Math.PI * radius * radius * height);

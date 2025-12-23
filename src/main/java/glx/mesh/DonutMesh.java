@@ -97,6 +97,23 @@ public class DonutMesh extends Mesh {
     }
 
     @Override
+    public Mesh duplicate(String newName) {
+        DonutMesh copy = new DonutMesh(newName);
+        copy.width = this.width;
+        copy.length = this.length;
+        copy.height = this.height;
+        copy.positionX = this.positionX;
+        copy.positionY = this.positionY;
+        copy.positionZ = this.positionZ;
+        copy.rotationX = this.rotationX;
+        copy.rotationY = this.rotationY;
+        copy.rotationZ = this.rotationZ;
+        copy.innerRadius = this.innerRadius;
+        copy.outerRadius = this.outerRadius;
+        return copy;
+    }
+
+    @Override
     public float getVolume() {
         float majorRadius = (outerRadius + innerRadius) / 2.0f;
         float minorRadius = (outerRadius - innerRadius) / 2.0f;

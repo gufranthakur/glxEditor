@@ -81,6 +81,21 @@ public class CubeMesh extends Mesh {
     }
 
     @Override
+    public Mesh duplicate(String newName) {
+        CubeMesh copy = new CubeMesh(newName);
+        copy.width = this.width;
+        copy.length = this.length;
+        copy.height = this.height;
+        copy.positionX = this.positionX;
+        copy.positionY = this.positionY;
+        copy.positionZ = this.positionZ;
+        copy.rotationX = this.rotationX;
+        copy.rotationY = this.rotationY;
+        copy.rotationZ = this.rotationZ;
+        return copy;
+    }
+
+    @Override
     public float getVolume() {
         return width * length * height;
     }

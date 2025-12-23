@@ -100,6 +100,22 @@ public class TriangleMesh extends Mesh {
     }
 
     @Override
+    public Mesh duplicate(String newName) {
+        TriangleMesh copy = new TriangleMesh(newName);
+        copy.width = this.width;
+        copy.length = this.length;
+        copy.height = this.height;
+        copy.positionX = this.positionX;
+        copy.positionY = this.positionY;
+        copy.positionZ = this.positionZ;
+        copy.rotationX = this.rotationX;
+        copy.rotationY = this.rotationY;
+        copy.rotationZ = this.rotationZ;
+        copy.slopeFactor = this.slopeFactor;
+        return copy;
+    }
+
+    @Override
     public float getVolume() {
         return (width * length * height) / 2.0f;
     }

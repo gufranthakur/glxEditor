@@ -74,7 +74,7 @@ public class Stage1Panel extends JPanel {
         JLabel title = new JLabel("Meshes");
         title.setFont(new Font("Arial", Font.BOLD, 16));
 
-        JPanel buttonPanel = new JPanel(new GridLayout(5, 1, 5, 5));
+        JPanel buttonPanel = new JPanel(new GridLayout(6, 1, 5, 5));
 
         JButton addCubeButton = new JButton("Add Cube");
         addCubeButton.addActionListener(e -> addMesh("Cube"));
@@ -88,6 +88,9 @@ public class Stage1Panel extends JPanel {
         JButton addTriangleButton = new JButton("Add Triangle");
         addTriangleButton.addActionListener(e -> addMesh("Triangle"));
 
+        JButton duplicateButton = new JButton("Duplicate");
+        duplicateButton.addActionListener(e -> duplicateMesh());
+
         JButton removeButton = new JButton("Remove");
         removeButton.addActionListener(e -> removeMesh());
 
@@ -95,6 +98,7 @@ public class Stage1Panel extends JPanel {
         buttonPanel.add(addCylinderButton);
         buttonPanel.add(addDonutButton);
         buttonPanel.add(addTriangleButton);
+        buttonPanel.add(duplicateButton);
         buttonPanel.add(removeButton);
 
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
@@ -459,6 +463,24 @@ public class Stage1Panel extends JPanel {
         scene.addMesh(mesh);
         meshListModel.addElement(mesh);
         meshList.setSelectedValue(mesh, true);
+    }
+
+    private void duplicateMesh() {
+        Mesh selected = meshList.getSelectedValue();
+        if (selected == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a mesh to duplicate",
+                    "No Mesh Selected",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String newName = selected.getType() + " " + meshCounter++;
+        Mesh duplicate = selected.duplicate(newName);
+
+        scene.addMesh(duplicate);
+        meshListModel.addElement(duplicate);
+        meshList.setSelectedValue(duplicate, true);
     }
 
     private void removeMesh() {
