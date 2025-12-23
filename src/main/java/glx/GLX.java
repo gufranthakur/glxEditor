@@ -25,6 +25,7 @@ public class GLX {
     private double lastMouseX;
     private double lastMouseY;
     private boolean isDragging = false;
+    private boolean isGizmoDragging = false;
 
     public void run() {
         scene = new Scene();
@@ -93,20 +94,48 @@ public class GLX {
         glfwSetMouseButtonCallback(window, (win, button, action, mods) -> {
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
                 if (action == GLFW_PRESS) {
-                    isDragging = true;
                     double[] xpos = new double[1];
                     double[] ypos = new double[1];
                     glfwGetCursorPos(window, xpos, ypos);
-                    lastMouseX = xpos[0];
-                    lastMouseY = ypos[0];
+
+                    int[] width = new int[1];
+                    int[] height = new int[1];
+                    glfwGetWindowSize(window, width, height);
+
+                    int hitAxis = scene.checkGizmoHit(xpos[0], ypos[0], width[0], height[0]);
+
+                    if (hitAxis != -1) {
+                        isGizmoDragging = true;
+                        scene.draggedAxis = hitAxis;
+                        scene.dragStartX = (float)xpos[0];
+                        scene.dragStartY = (float)ypos[0];
+
+                        if (scene.getSelectedMesh() != null) {
+                            scene.meshStartX = scene.getSelectedMesh().getPositionX();
+                            scene.meshStartY = scene.getSelectedMesh().getPositionY();
+                            scene.meshStartZ = scene.getSelectedMesh().getPositionZ();
+                        }
+                    } else {
+                        isDragging = true;
+                        lastMouseX = xpos[0];
+                        lastMouseY = ypos[0];
+                    }
                 } else if (action == GLFW_RELEASE) {
                     isDragging = false;
+                    isGizmoDragging = false;
+                    scene.draggedAxis = -1;
                 }
             }
         });
 
         glfwSetCursorPosCallback(window, (win, xpos, ypos) -> {
-            if (isDragging) {
+            if (isGizmoDragging) {
+                int[] width = new int[1];
+                int[] height = new int[1];
+                glfwGetWindowSize(window, width, height);
+
+                scene.updateMeshPosition(xpos, ypos, width[0], height[0]);
+            } else if (isDragging) {
                 double deltaX = xpos - lastMouseX;
                 double deltaY = ypos - lastMouseY;
 
